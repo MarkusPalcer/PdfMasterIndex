@@ -1,0 +1,23 @@
+﻿services:
+  service:
+    image: service
+    build:
+      context: .
+      dockerfile: Service/Dockerfile
+    depends_on:
+      - database
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=database;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True
+    ports:
+      - "8080:8080"
+
+  database:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=YourStrong!Passw0rd
+    volumes:
+      - database_volume:/var/opt/mssql
+
+volumes:
+  database_volume:
