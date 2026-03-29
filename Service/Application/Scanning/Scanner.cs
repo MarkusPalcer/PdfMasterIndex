@@ -53,9 +53,11 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
         {
             await ScanForFiles();
             await ProcessFiles();
+            Status.CurrentStep = ScanStep.Idle;
         }
         catch (OperationCanceledException)
         {
+            logger.Cancelled();
         }
         catch (Exception ex)
         {
@@ -97,8 +99,6 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
         {
             logger.ScanningFile(file.FullName);
             _cancellationSource.Token.ThrowIfCancellationRequested();
-
-
 
             var relativePath = file.FullName[(path.InternalPath.Length + 1)..];
             if (!knownFiles.Remove(relativePath, out var document))
@@ -190,6 +190,7 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
             {
                 await ProcessFile(document, repository);
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
                 logger.ImportFailed(document.FilePath, ex);
@@ -198,6 +199,8 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
             scanned++;
             Status.CurrentStepProgress = scanned / (double)documentCount;
         }
+        
+        logger.ImportFinished();
     }
 
     private async Task ProcessFile(Document document, IRepository repository)
@@ -213,6 +216,7 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
 
         foreach (var page in pdf.GetPages())
         {
+            _cancellationSource.Token.ThrowIfCancellationRequested();
             var text = ContentOrderTextExtractor.GetText(page).ToLowerInvariant();
             foreach (var (toReplace, replaceWith) in _textReplacements)
             {
@@ -224,8 +228,10 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
 
             uint positionInPage = 0;
             var splitString = text.Split(default(char[]), StringSplitOptions.RemoveEmptyEntries);
+            
             foreach (var word in splitString)
             {
+                _cancellationSource.Token.ThrowIfCancellationRequested();
                 if (!words.TryGetValue(word, out var wordEntity))
                 {
                     wordEntity = new Word
@@ -253,6 +259,7 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
             Status.CurrentFileProgress = page.Number / (double)pdf.NumberOfPages;
         }
 
+        _cancellationSource.Token.ThrowIfCancellationRequested();
         document.Hash = await HashFileAsync(new FileInfo(Path.Combine(document.ScanPath.InternalPath, document.FilePath)));
         await repository.SaveChangesAsync();
     }

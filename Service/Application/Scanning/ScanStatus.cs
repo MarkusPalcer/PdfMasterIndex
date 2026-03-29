@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using PdfMasterIndex.Service.Attributes;
 using PdfMasterIndex.Service.Presentation.v1;
 
-namespace PdfMasterIndex.Service.Application;
+namespace PdfMasterIndex.Service.Application.Scanning;
 
 [AutoInterface]
 [Lifetime(ServiceLifetime.Singleton)]

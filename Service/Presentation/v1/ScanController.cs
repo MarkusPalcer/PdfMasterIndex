@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using PdfMasterIndex.Service.Application;
 using PdfMasterIndex.Service.Application.Scanning;
 
 namespace PdfMasterIndex.Service.Presentation.v1;

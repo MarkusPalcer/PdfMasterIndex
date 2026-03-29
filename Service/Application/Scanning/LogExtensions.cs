@@ -40,4 +40,7 @@ public static partial class LogExtensions
     
     [LoggerMessage(LogLevel.Error, "Uncaught exception during scan")]
     public static partial void UncaughtException(this ILogger logger, Exception exception);
+    
+    [LoggerMessage(LogLevel.Information, "Scan cancelled")]
+    public static partial void Cancelled(this ILogger logger);
 }

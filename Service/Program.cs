@@ -5,7 +5,11 @@ using PdfMasterIndex.Service.Attributes;
 using PdfMasterIndex.Service.Infrastructure.Persistence;
 using PdfMasterIndex.Service.Presentation.v1;
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+{
+    Args = args,
+    WebRootPath = "WebRoot"
+});
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -33,7 +37,10 @@ using (var scope = app.Services.CreateScope())
 }
 
 app.MapOpenApi();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 app.UseAuthorization();
 app.MapControllers();
+app.MapFallbackToFile("index.html");
 app.MapHub<ScanHub>("/scan-hub");
 app.Run();
