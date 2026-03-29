@@ -44,9 +44,12 @@ POST {{ServerUrl}}/scan
 
 ###
 
-GET {{ServerUrl}}/search
-Content-Type: application/json
+GET {{ServerUrl}}/search?query=abge
+Accept: application/json
 
-"abge"
+###
+
+GET {{ServerUrl}}/search
+Accept: application/json
 
 ###

@@ -22,8 +22,13 @@ public class SearchResult
 public class SearchController(IRepository repository) : ControllerBase
 {
     [HttpGet("/api/v1/search")]
-    public async Task<SearchResult[]> Search([FromBody] string query)
+    public async Task<SearchResult[]> Search([FromQuery] string query)
     {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return [];
+        }
+
         var search = repository.Occurrences
                                .Include(x => x.Word)
                                .Where(x => x.Word.Value.Contains(query))

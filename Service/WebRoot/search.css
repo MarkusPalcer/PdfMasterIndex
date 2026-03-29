@@ -47,3 +47,43 @@
     color: #6c757d;
     pointer-events: none;
 }
+
+#search-spinner {
+    position: absolute;
+    right: 40px; /* To the left of the search icon */
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+#search-results-container {
+    width: 80%;
+    margin: 20px auto;
+}
+
+#search-results-container ul {
+    list-style-type: none;
+    padding-left: 20px;
+}
+
+#search-results-container > ul {
+    padding-left: 0;
+}
+
+#search-results-container li {
+    margin-bottom: 5px;
+}
+
+.document-link {
+    text-decoration: none;
+    color: #0d6efd;
+    margin: 0 5px;
+}
+
+.document-link:hover {
+    text-decoration: underline;
+}
+
+.pages-list {
+    color: #6c757d;
+    font-size: 0.9em;
+}
