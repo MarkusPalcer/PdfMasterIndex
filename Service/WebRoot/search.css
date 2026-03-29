@@ -45,7 +45,7 @@
     right: 15px;
     font-size: 1.2em;
     color: #6c757d;
-    pointer-events: none;
+    cursor: pointer;
 }
 
 #search-spinner {

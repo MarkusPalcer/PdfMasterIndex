@@ -12,6 +12,7 @@ public class SearchResult
 
     public class Location
     {
+        public Guid DocumentId { get; set; }
         public string DocumentName { get; set; } = "";
         public string LinkPath { get; set; } = "";
         public List<int> Pages { get; set; } = [];
@@ -50,8 +51,9 @@ public class SearchController(IRepository repository) : ControllerBase
             {
                 result.Locations.Add(new SearchResult.Location
                 {
+                    DocumentId = documents.Key.Id,
                     DocumentName = documents.Key.Name,
-                    LinkPath = Path.Combine(documents.Key.ScanPath.ExternalPath, documents.Key.Name),
+                    LinkPath = $"/api/v1/documents/{documents.Key.Id}",
                     Pages = documents.Select(x => x.Page).Distinct().ToList()
                 });
             }

@@ -12,15 +12,25 @@ public class DocumentController(IRepository repository) : ControllerBase
     public async Task<Document[]> Get() => await repository.Documents.ToArrayAsync();
     
     [HttpGet("/api/v1/documents/{id}")]
-    public async Task<ActionResult<Document>> Get(Guid id)
+    public async Task<IActionResult> Get(Guid id)
     {
-        var result = await repository.Documents.SingleOrDefaultAsync(x => x.Id == id);
+        var result = await repository.Documents
+                                     .Include(x => x.ScanPath)
+                                     .SingleOrDefaultAsync(x => x.Id == id);
 
         if (result == null)
         {
             return NotFound();
         }
-        
-        return result;
+
+        var filePath = Path.Combine(result.ScanPath.InternalPath, result.FilePath);
+
+        if (!System.IO.File.Exists(filePath))
+        {
+            return NotFound();
+        }
+
+        var stream = System.IO.File.OpenRead(filePath);
+        return File(stream, "application/pdf", result.Name);
     }
 }

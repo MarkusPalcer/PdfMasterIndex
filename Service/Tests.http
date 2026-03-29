@@ -53,3 +53,14 @@ GET {{ServerUrl}}/search
 Accept: application/json
 
 ###
+
+GET {{ServerUrl}}/documents
+Accept: application/json
+
+###
+
+@DocumentId = your-document-id-here
+GET {{ServerUrl}}/documents/{{DocumentId}}
+Accept: application/pdf
+
+###

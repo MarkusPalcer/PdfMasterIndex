@@ -1,5 +1,6 @@
 $(() => {
     const $searchInput = $('#search-input');
+    const $searchIcon = $('.search-icon');
     const $searchError = $('#search-error');
     const $searchSpinner = $('#search-spinner');
     const $searchResultsContainer = $('#search-results-container');
@@ -55,7 +56,8 @@ $(() => {
 
                 const $link = $('<a>')
                     .addClass('document-link')
-                    .attr('href', 'file:///' + location.linkPath.replace(/\\/g, '/'))
+                    .attr('href', location.linkPath)
+                    .attr('target', '_blank')
                     .attr('title', 'Open document')
                     .html('&#128279;'); // Link icon (🔗)
 
@@ -77,18 +79,26 @@ $(() => {
         $searchResultsContainer.append($ul);
     }
 
+    function onSearchTriggered() {
+        const query = $searchInput.val();
+        if (query.includes(' ')) {
+            return;
+        }
+        if (query.trim() === '') {
+            $searchResultsContainer.empty();
+            return;
+        }
+        performSearch(query);
+    }
+
     $searchInput.on('keypress', function (e) {
         if (e.which === 13) { // Enter key
-            const query = $(this).val();
-            if (query.includes(' ')) {
-                e.preventDefault();
-                return;
-            }
-            if (query.trim() === '') {
-                $searchResultsContainer.empty();
-                return;
-            }
-            performSearch(query);
+            e.preventDefault();
+            onSearchTriggered();
         }
+    });
+
+    $searchIcon.on('click', function () {
+        onSearchTriggered();
     });
 });
