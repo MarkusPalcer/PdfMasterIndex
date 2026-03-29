@@ -55,6 +55,39 @@
     transform: translateY(-50%);
 }
 
+.collapsible-header {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    user-select: none;
+}
+
+.chevron {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    margin-right: 5px;
+    transition: transform 0.3s ease;
+    text-align: center;
+    line-height: 1em;
+}
+
+.chevron.collapsed {
+    transform: rotate(-90deg);
+}
+
+.collapsible-header:hover {
+    color: #0d6efd;
+}
+
+.collapsible-content {
+    display: block;
+}
+
+.collapsible-content.collapsed {
+    display: none;
+}
+
 #search-results-container {
     width: 80%;
     margin: 20px auto;

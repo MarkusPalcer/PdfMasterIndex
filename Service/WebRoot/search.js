@@ -39,8 +39,15 @@ $(() => {
 
         const $ul = $('<ul>');
         results.forEach(result => {
-            const $wordLi = $('<li>').append($('<strong>').text(result.word));
-            const $locationsUl = $('<ul>');
+            const $wordLi = $('<li>');
+            const $header = $('<div>').addClass('collapsible-header');
+            const $chevron = $('<span>').addClass('chevron collapsed').html('&#9660;'); // Downward arrow
+            const $wordLabel = $('<strong>').text(result.word);
+            
+            $header.append($chevron).append($wordLabel);
+            $wordLi.append($header);
+
+            const $locationsUl = $('<ul>').addClass('collapsible-content collapsed');
 
             result.locations.forEach(location => {
                 const $locationLi = $('<li>');
@@ -58,6 +65,12 @@ $(() => {
             });
 
             $wordLi.append($locationsUl);
+
+            $header.on('click', function() {
+                $chevron.toggleClass('collapsed');
+                $locationsUl.toggleClass('collapsed');
+            });
+
             $ul.append($wordLi);
         });
 
