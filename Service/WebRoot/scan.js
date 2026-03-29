@@ -1,4 +1,8 @@
-$(() => {
+$(async () => {
+    // Inject status container from status.html
+    const statusFragment = await $.get('status.html');
+    $('body').append(statusFragment);
+
     const connection = new signalR.HubConnectionBuilder()
         .withUrl("/scan-hub")
         .configureLogging(signalR.LogLevel.Information)

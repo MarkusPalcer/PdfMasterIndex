@@ -1,43 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>PDF Master Index</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
-    <h1>PDF Master Index</h1>
-    <a id="settings-link" class="top-right-link" href="settings.html">&#x2699;</a>
-
-    <div id="status-container" class="status-container">
-        <div class="status-header">
-            <span class="status-title">Update index</span>
-            <div class="status-actions">
-                <a id="scan-link" class="scan-link" href="#">&#x21BB;</a>
-                <a id="cancel-link" class="cancel-link" href="#">&#x2715;</a>
-                <div id="cancel-spinner" class="spinner"></div>
-            </div>
-        </div>
-        
-        <div id="current-step-text" class="progress-label hidden">Current Step:</div>
-
-        <div id="top-progress-section" class="progress-section hidden">
-            <div class="progress-label">Step Progress</div>
-            <div class="progress-bar-container">
-                <div id="top-progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
-            </div>
-        </div>
-
-        <div id="bottom-progress-section" class="progress-section hidden">
-            <div class="progress-label">File Progress</div>
-            <div class="progress-bar-container">
-                <div id="bottom-progress-bar-fill" class="progress-bar-fill" style="width: 0%;"></div>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
-    <script src="scan.js"></script>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <title>PDF Master Index</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <h1>PDF Master Index</h1>
+        <a id="settings-link" class="top-right-link" href="settings.html">&#x2699;</a>
+    
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+        <script src="scan.js"></script>
+    </body>
 </html>
