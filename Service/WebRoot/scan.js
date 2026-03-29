@@ -53,6 +53,11 @@ $(async () => {
         updateUI(status);
     });
 
+    connection.onclose(async () => {
+        console.log("SignalR Connection lost. Reconnecting in 5s...");
+        setTimeout(start, 5000);
+    });
+
     async function start() {
         try {
             // Initial fetch of status before subscribing to events
