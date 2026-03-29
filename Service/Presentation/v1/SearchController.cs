@@ -5,20 +5,54 @@ using PdfMasterIndex.Service.Infrastructure.Persistence.Models;
 
 namespace PdfMasterIndex.Service.Presentation.v1;
 
+public class SearchResult
+{
+    public string Word { get; set; } = "";
+    public List<Location> Locations { get; set; } = [];
+
+    public class Location
+    {
+        public string DocumentName { get; set; } = "";
+        public string LinkPath { get; set; } = "";
+        public List<int> Pages { get; set; } = [];
+    }
+}
+
 [ApiController]
 public class SearchController(IRepository repository) : ControllerBase
 {
     [HttpGet("/api/v1/search")]
-    public IGrouping<string, Occurrence>[] Search([FromBody] string query)
+    public async Task<SearchResult[]> Search([FromBody] string query)
     {
-        return repository.Occurrences
-                         .Include(x => x.Word)
-                         .Where(x => x.Word.Value.Contains(query))
-                         .Include(x => x.Document)
-                         .OrderBy(x => x.Word.Value)
-                         .AsEnumerable()
-                         .GroupBy(x => x.Word.Value)
-                         .Take(100)
-                         .ToArray();
+        var search = repository.Occurrences
+                               .Include(x => x.Word)
+                               .Where(x => x.Word.Value.Contains(query))
+                               .Include(x => x.Document)
+                               .Include(x => x.Document.ScanPath)
+                               .OrderBy(x => x.Word.Value)
+                               .AsAsyncEnumerable()
+                               .GroupBy(x => x.Word.Value);
+
+        var results = new List<SearchResult>();
+
+        await foreach (var item in search)
+        {
+            var result = new SearchResult
+            {
+                Word = item.Key,
+            };
+            foreach (var documents in item.GroupBy(x => x.Document))
+            {
+                result.Locations.Add(new SearchResult.Location
+                {
+                    DocumentName = documents.Key.Name,
+                    LinkPath = Path.Combine(documents.Key.ScanPath.ExternalPath, documents.Key.Name),
+                    Pages = documents.Select(x => x.Page).Distinct().ToList()
+                });
+            }
+            results.Add(result);
+        }
+        
+        return results.ToArray();
     }
 }
