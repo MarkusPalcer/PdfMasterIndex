@@ -20,7 +20,7 @@ public class Occurrence
     /// <summary>
     /// The zero-based page that contains the word.
     /// </summary>
-    public uint Page { get; set; }
+    public int Page { get; set; }
     
     /// <summary>
     /// The zero-based position of the word on the page.

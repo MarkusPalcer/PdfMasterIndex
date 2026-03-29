@@ -3,16 +3,13 @@ using AutoInterfaceAttributes;
 using Microsoft.EntityFrameworkCore;
 using PdfMasterIndex.Service.Attributes;
 using PdfMasterIndex.Service.Infrastructure.Persistence;
+using PdfMasterIndex.Service.Presentation.v1;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(5083);
-});
-
 // Add services to the container.
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 
@@ -38,4 +35,5 @@ using (var scope = app.Services.CreateScope())
 app.MapOpenApi();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<ScanHub>("/scan-hub");
 app.Run();

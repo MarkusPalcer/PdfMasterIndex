@@ -1,9 +1,0 @@
-@WebApplication1_HostAddress = http://localhost:5083
-
-POST {{WebApplication1_HostAddress}}/api/v1/import/
-Accept: application/json
-Content-Type: application/json
-
-< \\192.168.178.81\Markus\RPG\DSA\Aventurischer Bote\158 - Bote.pdf
-
-###

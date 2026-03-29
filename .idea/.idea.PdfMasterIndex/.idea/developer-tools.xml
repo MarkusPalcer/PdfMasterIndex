@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DeveloperToolsToolWindowSettingsV1" lastSelectedContentNodeId="json-text-escape" pluginVersion="7.1.0">
+    <developerToolsConfigurations>
+      <developerToolConfiguration developerToolId="json-text-escape" id="7fd76e8d-7b18-4ba8-900a-4487ca41a11b" name="Workbench">
+        <properties>
+          <property key="sourceText" type="INPUT" value="kotlin.String|\\192.168.178.81\Markus\RPG\DSA\RB - Regelwerk 4.1" />
+          <property key="targetText" type="INPUT" value="kotlin.String|\\\\192.168.178.81\\Markus\\RPG\\DSA\\RB - Regelwerk 4.1" />
+        </properties>
+      </developerToolConfiguration>
+    </developerToolsConfigurations>
+  </component>
+</project>

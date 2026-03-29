@@ -68,9 +68,20 @@ public class ScanPathController(IRepository repository) : ControllerBase
             return NotFound();
         }
 
-        existing.Name = scanPath.Name;
-        existing.InternalPath = scanPath.InternalPath;
-        existing.ExternalPath = scanPath.ExternalPath;
+        if (!scanPath.Name.IsNullOrEmpty())
+        {
+            existing.Name = scanPath.Name;
+        }
+        
+        if (!scanPath.InternalPath.IsNullOrEmpty())
+        {
+            existing.InternalPath = scanPath.InternalPath;
+        }
+        
+        if (!scanPath.ExternalPath.IsNullOrEmpty())
+        {
+            existing.ExternalPath = scanPath.ExternalPath;
+        }
 
         repository.Update(existing);
         await repository.SaveChangesAsync();

@@ -1,0 +1,42 @@
+@ServerUrl = http://localhost:5083/api/v1
+@ScanPathId = 16d29554-c50c-40be-9295-54c50c30be4a
+
+###
+
+POST {{ServerUrl}}/scanpaths 
+Content-Type: application/json
+Accept: application/json
+
+{
+    "id": "{{ScanPathId}}",
+    "InternalPath": "\\\\192.168.178.81\\Markus\\RPG\\DSA\\RB - Regelwerk 4.1"
+}
+
+###
+
+GET {{ServerUrl}}/scanpaths
+Accept: application/json
+
+###
+
+GET {{ServerUrl}}/scanpaths/{{ScanPathId}}
+Accept: application/json
+
+###
+
+PUT {{ServerUrl}}/scanpaths/{{ScanPathId}}
+Accept: application/json
+Content-Type: application/json
+
+{
+  "Name": "Regelwerke"
+}
+
+###
+
+DELETE {{ServerUrl}}/scanpaths/{{ScanPathId}}
+Accept: application/json
+
+###
+
+POST {{ServerUrl}}/scan

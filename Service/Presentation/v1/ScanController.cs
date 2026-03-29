@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using PdfMasterIndex.Service.Application;
+using PdfMasterIndex.Service.Application.Scanning;
 
 namespace PdfMasterIndex.Service.Presentation.v1;
-
 
 [ApiController]
 public class ScanController(IScanner scanner) : ControllerBase
@@ -22,9 +22,9 @@ public class ScanController(IScanner scanner) : ControllerBase
     }
 
     [HttpGet("/api/v1/scan")]
-    public ActionResult<ScanStatus> Get()
+    public ActionResult<IScanStatus> Get()
     {
-        return scanner.Status;
+        return Ok(scanner.Status);
     }
 
     [HttpDelete("/api/v1/scan")]
