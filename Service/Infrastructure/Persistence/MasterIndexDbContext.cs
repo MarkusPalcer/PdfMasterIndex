@@ -9,6 +9,8 @@ public class MasterIndexDbContext(DbContextOptions<MasterIndexDbContext> options
     public DbSet<Document> Documents { get; set; }
     public DbSet<Word> Words { get; set; }
     
+    public DbSet<Occurrence> Occurrences { get; set; }
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MasterIndexDbContext).Assembly);

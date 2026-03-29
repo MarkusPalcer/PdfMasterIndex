@@ -32,6 +32,7 @@ Content-Type: application/json
   "Name": "Regelwerke"
 }
 
+
 ###
 
 DELETE {{ServerUrl}}/scanpaths/{{ScanPathId}}
@@ -40,3 +41,12 @@ Accept: application/json
 ###
 
 POST {{ServerUrl}}/scan
+
+###
+
+GET {{ServerUrl}}/search
+Content-Type: application/json
+
+"bosparano"
+
+###

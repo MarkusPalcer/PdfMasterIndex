@@ -30,12 +30,18 @@
 
     <ItemGroup>
       <Folder Include="Infrastructure\" />
+      <Folder Include="Infrastructure\Persistence\Migrations\" />
     </ItemGroup>
 
     <ItemGroup>
       <Content Include="..\.dockerignore">
         <Link>.dockerignore</Link>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Infrastructure\Persistence\Migrations\20260329130402_Initial.cs" />
+      <Compile Remove="Infrastructure\Persistence\Migrations\20260329130402_Initial.Designer.cs" />
     </ItemGroup>
 
 </Project>

@@ -10,7 +10,7 @@ namespace PdfMasterIndex.Service.Presentation.v1;
 public class ScanPathController(IRepository repository) : ControllerBase
 {
     [HttpGet("/api/v1/scanpaths")]
-    public IEnumerable<ScanPath> Get() => repository.ScanPaths.ToArray();
+    public async Task<ScanPath[]> Get() => await repository.ScanPaths.ToArrayAsync();
     
     [HttpGet("/api/v1/scanpaths/{id}")]
     public async Task<ActionResult<ScanPath>> Get(Guid id)

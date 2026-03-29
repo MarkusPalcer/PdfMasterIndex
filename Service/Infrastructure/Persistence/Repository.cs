@@ -1,4 +1,5 @@
 using AutoInterfaceAttributes;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using PdfMasterIndex.Service.Attributes;
 using PdfMasterIndex.Service.Infrastructure.Persistence.Models;
@@ -13,7 +14,9 @@ public class Repository(MasterIndexDbContext context) : IRepository
     public IQueryable<ScanPath> ScanPaths => context.ScanPaths;
     public IQueryable<Document> Documents => context.Documents;
     public IQueryable<Word> Words => context.Words;
-
+    
+    public IQueryable<Occurrence> Occurrences => context.Occurrences;
+    
     public ValueTask<EntityEntry<T>> AddAsync<T>(T entity) where T : class
     {
         return context.AddAsync(entity);
@@ -31,11 +34,16 @@ public class Repository(MasterIndexDbContext context) : IRepository
 
     public async Task ClearDocumentAsync(Document document)
     {
-        await context.Entry(document).Collection(x => x.Content).LoadAsync();
-        context.RemoveRange(document.Content);
-        document.Content.Clear();
         document.Hash.Value = [];
         await context.SaveChangesAsync();
+        
+        await context.Occurrences
+                     .Where(x => x.Document.Id == document.Id)
+                     .ExecuteDeleteAsync();
+        await context.Words
+                     .Where(x => x.Occurrences.Count == 0)
+                     .ExecuteDeleteAsync();
+
     }
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

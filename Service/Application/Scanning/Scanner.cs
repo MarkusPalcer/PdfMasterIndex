@@ -4,7 +4,6 @@ using PdfMasterIndex.Service.Attributes;
 using PdfMasterIndex.Service.Infrastructure.Persistence;
 using PdfMasterIndex.Service.Infrastructure.Persistence.Models;
 using UglyToad.PdfPig;
-using UglyToad.PdfPig.DocumentLayoutAnalysis.TextExtractor;
 
 namespace PdfMasterIndex.Service.Application.Scanning;
 
@@ -202,58 +201,56 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
     {
         Status.CurrentFileProgress = 0;
         logger.ImportProgress(document.FilePath);
+        var start = DateTime.UtcNow;
 
         await repository.ClearDocumentAsync(document);
         var words = await repository.Words.ToDictionaryAsync(x => x.Value);
 
         using var pdf = PdfDocument.Open(Path.Combine(document.ScanPath.InternalPath, document.FilePath));
-        uint positionInDocument = 0;
 
-        foreach (var page in pdf.GetPages())
+        var wordIndex = 0;
+        var oldSaveTask = Task.CompletedTask;
+        
+        foreach (var word in WordSplitter.SplitWords(pdf.GetPages()))
         {
             _cancellationSource.Token.ThrowIfCancellationRequested();
-            var text = ContentOrderTextExtractor.GetText(page).ToLowerInvariant();
-            var splitString = WordSplitter.SplitWords(text);
-
-            uint positionInPage = 0;
-            foreach (var word in splitString)
+            
+            if (!words.TryGetValue(word.Word, out var wordEntity))
             {
-                _cancellationSource.Token.ThrowIfCancellationRequested();
-
-                if (!word.Any(char.IsLetterOrDigit))
+                wordEntity = new Word
                 {
-                    continue;
-                }
-
-                if (!words.TryGetValue(word, out var wordEntity))
-                {
-                    wordEntity = new Word
-                    {
-                        Value = word
-                    };
-                    await repository.AddAsync(wordEntity);
-                    words[word] = wordEntity;
-                }
-
-                var occurrence = new Occurrence
-                {
-                    Document = document,
-                    DocumentPosition = positionInDocument,
-                    Page = page.Number,
-                    PagePosition = positionInPage,
-                    Word = wordEntity
+                    Value = word.Word
                 };
-                await repository.AddAsync(occurrence);
-
-                positionInDocument++;
-                positionInPage++;
+                await repository.AddAsync(wordEntity);
+                words[word.Word] = wordEntity;
             }
+            
+            var occurrence = new Occurrence
+            {
+                Document = document,
+                DocumentPosition = word.PositionInDocument,
+                Page = word.Page,
+                PagePosition = word.PositionInPage,
+                Word = wordEntity
+            };
+            
+            await repository.AddAsync(occurrence);
+            
+            Status.CurrentFileProgress = word.Page / (double)pdf.NumberOfPages;
 
-            Status.CurrentFileProgress = page.Number / (double)pdf.NumberOfPages;
+            wordIndex++;
+            if (wordIndex % 1000 == 0)
+            {
+                await repository.SaveChangesAsync();
+            }
         }
 
+        await oldSaveTask;
+        
         _cancellationSource.Token.ThrowIfCancellationRequested();
         document.Hash = await HashFileAsync(new FileInfo(Path.Combine(document.ScanPath.InternalPath, document.FilePath)));
         await repository.SaveChangesAsync();
+        var duration = DateTime.UtcNow - start;
+        logger.Log(LogLevel.Trace, "Duration: {Duration}", duration);
     }
 }
