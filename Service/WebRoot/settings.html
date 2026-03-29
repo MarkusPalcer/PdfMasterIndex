@@ -9,8 +9,47 @@
         <a id="close-link" class="top-right-link" href="index.html">&#x2715;</a>
         <h1>PDF Master Index – Settings</h1>
     
+        <h2>Source Folders</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Mounted folder</th>
+                    <th>Externally visible folder</th>
+                    <th>Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="source-folders-list">
+                <tr id="scan-folder-template" class="hidden">
+                    <td><input type="text" style="font-family: monospace; width: 100%;"></td>
+                    <td>
+                        <input type="text" style="font-family: monospace; width: calc(100% - 30px);">
+                        <button type="button" title="Select folder">&#128193;</button>
+                    </td>
+                    <td><input type="text" style="width: 100%;"></td>
+                    <td style="text-align: center;">
+                        <span style="cursor: pointer; margin: 0 5px;" title="Save" class="hidden">&#128190;</span>
+                        <span style="cursor: pointer; margin: 0 5px;" title="Revert" class="hidden">&#8634;</span>
+                        <span style="cursor: pointer; margin: 0 5px;" title="Delete">&#128465;</span>
+                    </td>
+                </tr>
+                <tr id="new-scan-folder">
+                    <td><input type="text" id="new-internal-path" style="font-family: monospace; width: 100%;"></td>
+                    <td>
+                        <input type="text" id="new-external-path" style="font-family: monospace; width: calc(100% - 30px);">
+                        <button type="button" id="new-select-folder" title="Select folder">&#128193;</button>
+                    </td>
+                    <td><input type="text" id="new-name" style="width: 100%;"></td>
+                    <td style="text-align: center;">
+                        <span id="save-new-scan-folder" style="cursor: pointer; margin: 0 5px;" title="Save">&#128190;</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
         <script src="scan.js"></script>
+        <script src="settings.js"></script>
     </body>
 </html>
