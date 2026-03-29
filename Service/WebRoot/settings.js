@@ -17,7 +17,34 @@ $(async () => {
 
     // Initial state for new entry
     updateSaveButtonState();
-    $newInternalPath.on('input', updateSaveButtonState);
+
+    let prevNewInternalPath = $newInternalPath.val();
+    let prevNewExternalPath = $newExternalPath.val();
+
+    $newInternalPath.on('input', () => {
+        const currentInternalValue = $newInternalPath.val();
+        const currentExternalValue = $newExternalPath.val();
+
+        if (!currentExternalValue.trim() || currentExternalValue === prevNewInternalPath) {
+            $newExternalPath.val(currentInternalValue);
+            $newExternalPath.trigger('input');
+        }
+
+        prevNewInternalPath = currentInternalValue;
+        updateSaveButtonState();
+    });
+
+    $newExternalPath.on('input', () => {
+        const currentExternalValue = $newExternalPath.val();
+        const currentNameValue = $newName.val();
+
+        if (!currentNameValue.trim() || currentNameValue === prevNewExternalPath) {
+            $newName.val(currentExternalValue);
+        }
+
+        prevNewExternalPath = currentExternalValue;
+        updateSaveButtonState();
+    });
 
     // Fetch and populate existing scan folders
     async function loadScanPaths() {
@@ -40,6 +67,32 @@ $(async () => {
                 const $saveBtn = $row.find('.save-btn').addClass('disabled');
                 const $revertBtn = $row.find('.revert-btn').addClass('disabled');
 
+                let prevInternalPath = $internalInput.val();
+                let prevExternalPath = $externalInput.val();
+
+                $internalInput.on('input', () => {
+                    const currentInternalValue = $internalInput.val();
+                    const currentExternalValue = $externalInput.val();
+
+                    if (!currentExternalValue.trim() || currentExternalValue === prevInternalPath) {
+                        $externalInput.val(currentInternalValue);
+                        $externalInput.trigger('input');
+                    }
+
+                    prevInternalPath = currentInternalValue;
+                });
+
+                $externalInput.on('input', () => {
+                    const currentExternalValue = $externalInput.val();
+                    const currentNameValue = $nameInput.val();
+
+                    if (!currentNameValue.trim() || currentNameValue === prevExternalPath) {
+                        $nameInput.val(currentExternalValue);
+                    }
+
+                    prevExternalPath = currentExternalValue;
+                });
+
                 function checkChanges() {
                     const isChanged = $internalInput.val() !== $row.attr('data-initial-internal') ||
                                       $externalInput.val() !== $row.attr('data-initial-external') ||
@@ -61,6 +114,8 @@ $(async () => {
                     $internalInput.val($row.attr('data-initial-internal'));
                     $externalInput.val($row.attr('data-initial-external'));
                     $nameInput.val($row.attr('data-initial-name'));
+                    prevInternalPath = $internalInput.val();
+                    prevExternalPath = $externalInput.val();
                     checkChanges();
                 });
 
@@ -88,6 +143,8 @@ $(async () => {
                         $row.attr('data-initial-internal', updatedData.internalPath);
                         $row.attr('data-initial-external', updatedData.externalPath);
                         $row.attr('data-initial-name', updatedData.name);
+                        prevInternalPath = updatedData.internalPath;
+                        prevExternalPath = updatedData.externalPath;
                         checkChanges();
                     } catch (err) {
                         const errorText = err.responseText || `Error ${err.status}`;
@@ -157,6 +214,8 @@ $(async () => {
             $newInternalPath.val('');
             $newExternalPath.val('');
             $newName.val('');
+            prevNewInternalPath = '';
+            prevNewExternalPath = '';
             updateSaveButtonState();
             await loadScanPaths();
         } catch (err) {
