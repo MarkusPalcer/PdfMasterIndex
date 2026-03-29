@@ -47,6 +47,6 @@ POST {{ServerUrl}}/scan
 GET {{ServerUrl}}/search
 Content-Type: application/json
 
-"bosparano"
+"abge"
 
 ###

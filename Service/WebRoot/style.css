@@ -142,9 +142,9 @@ table th {
     background-color: #f8f9fa;
 }
 
-input[type="text"] {
-    padding: 4px;
-    box-sizing: border-box;
+h1 {
+    text-align: center;
+    color: #495057;
 }
 
 button {
