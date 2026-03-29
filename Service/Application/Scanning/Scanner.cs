@@ -16,11 +16,6 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
     private Task _scanTask = Task.CompletedTask;
     private CancellationTokenSource _cancellationSource = new();
 
-    private readonly (string, string)[] _textReplacements =
-    [
-        ($"\n{Environment.NewLine}", Environment.NewLine),
-    ];
-
     public void Start()
     {
         if (Status.IsRunning)
@@ -218,20 +213,18 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
         {
             _cancellationSource.Token.ThrowIfCancellationRequested();
             var text = ContentOrderTextExtractor.GetText(page).ToLowerInvariant();
-            foreach (var (toReplace, replaceWith) in _textReplacements)
-            {
-                while (text.Contains(toReplace))
-                {
-                    text = text.Replace(toReplace, replaceWith);
-                }
-            }
+            var splitString = WordSplitter.SplitWords(text);
 
             uint positionInPage = 0;
-            var splitString = text.Split(default(char[]), StringSplitOptions.RemoveEmptyEntries);
-            
             foreach (var word in splitString)
             {
                 _cancellationSource.Token.ThrowIfCancellationRequested();
+
+                if (!word.Any(char.IsLetterOrDigit))
+                {
+                    continue;
+                }
+
                 if (!words.TryGetValue(word, out var wordEntity))
                 {
                     wordEntity = new Word
