@@ -69,7 +69,7 @@ $(() => {
                 const $locationLi = $(locationTemplate);
                 $locationLi.find('.document-name').text(location.documentName);
                 const $link = $locationLi.find('.document-link');
-                $locationLi.find('.pages-list').text('Pages: ' + location.pages.join(', '));
+                $locationLi.find('.pages-list').text(location.pages.join(', '));
                 
                 $link.on('click', function(e) {
                     e.preventDefault();
