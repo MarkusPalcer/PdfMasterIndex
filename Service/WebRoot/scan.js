@@ -1,6 +1,11 @@
 $(async () => {
+    // Inject scan styles
+    if (!$('link[href="scan.css"]').length) {
+        $('head').append('<link rel="stylesheet" href="scan.css">');
+    }
+
     // Inject status container from status.html
-    const statusFragment = await $.get('status.html');
+    const statusFragment = await $.get('scan.html');
     $('body').append(statusFragment);
 
     const connection = new signalR.HubConnectionBuilder()
