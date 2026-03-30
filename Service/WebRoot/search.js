@@ -5,6 +5,7 @@ $(() => {
     const $searchSpinner = $('#search-spinner');
     const $searchResultsContainer = $('#search-results-container');
 
+    let searchTimeout;
     $searchInput.on('input', function () {
         const query = $(this).val();
         if (query.includes(' ')) {
@@ -14,6 +15,11 @@ $(() => {
             $searchInput.removeClass('invalid-input');
             $searchError.hide();
         }
+
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            onSearchTriggered();
+        }, 500);
     });
 
     let wordTemplate;
@@ -87,6 +93,7 @@ $(() => {
     }
 
     function onSearchTriggered() {
+        clearTimeout(searchTimeout);
         const query = $searchInput.val();
         if (query.includes(' ')) {
             return;
