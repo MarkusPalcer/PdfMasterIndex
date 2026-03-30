@@ -74,8 +74,7 @@ $(() => {
                 $link.on('click', function(e) {
                     e.preventDefault();
                     if (window.showDocumentOverlay) {
-                        const originalSearchTerm = $searchInput.val();
-                        window.showDocumentOverlay(location, originalSearchTerm);
+                        window.showDocumentOverlay(location, result.word);
                     }
                 });
 
