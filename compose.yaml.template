@@ -1,0 +1,37 @@
+﻿services:
+  service:
+    image: service
+    build:
+      context: .
+      dockerfile: Service/Dockerfile
+    depends_on:
+      - database
+    environment:
+      # The password here must be the same as the one in the database
+      - ConnectionStrings__DefaultConnection=Server=database;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True
+    ports:
+      - "8080:8080"
+    # Mount volumes with data to be indexed
+    volumes:
+      - data:/data
+
+  database:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      # The password here must be the same as the one in the service 
+      - MSSQL_SA_PASSWORD=YourStrong!Passw0rd
+    volumes:
+      - database_volume:/var/opt/mssql
+
+volumes:
+  database_volume:
+    # You can configure this to mount a real folder or network share
+  
+  # And here you can mount folders with data to be indexed, for example a network share
+  data:
+    driver: local
+    driver_opts:
+      type: cifs
+      device: \\10.20.30.40\MyShare
+      o: username=ItsAMe,password=M4r10,file_mode=0777,dir_mode=0777,uid=999,gid=999,noperm,ro

@@ -7,12 +7,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Files", "Solution 
 		Dockerfile = Dockerfile
 		.dockerignore = .dockerignore
 		.gitignore = .gitignore
-		compose.yaml = compose.yaml
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{39595DFC-4AAB-48E3-90B6-1BBD38A77A78}"
-	ProjectSection(SolutionItems) = preProject
-		compose.yaml = compose.yaml
+		compose.yaml.template = compose.yaml.template
 	EndProjectSection
 EndProject
 Global
