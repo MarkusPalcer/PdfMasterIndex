@@ -62,9 +62,16 @@ $(() => {
             result.locations.forEach(location => {
                 const $locationLi = $(locationTemplate);
                 $locationLi.find('.document-name').text(location.documentName);
-                $locationLi.find('.document-link').attr('href', location.linkPath);
+                const $link = $locationLi.find('.document-link');
                 $locationLi.find('.pages-list').text('Pages: ' + location.pages.join(', '));
                 
+                $link.on('click', function(e) {
+                    e.preventDefault();
+                    if (window.showDocumentOverlay) {
+                        window.showDocumentOverlay(location);
+                    }
+                });
+
                 $locationsUl.append($locationLi);
             });
 
