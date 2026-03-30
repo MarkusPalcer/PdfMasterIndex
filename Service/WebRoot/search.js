@@ -42,7 +42,7 @@ $(() => {
         results.forEach(result => {
             const $wordLi = $('<li>');
             const $header = $('<div>').addClass('collapsible-header');
-            const $chevron = $('<span>').addClass('chevron collapsed').html('&#9660;'); // Downward arrow
+            const $chevron = $('<span>').addClass('chevron collapsed').attr('title', 'Toggle').html('&#9660;'); // Downward arrow
             const $wordLabel = $('<strong>').text(result.word);
             
             $header.append($chevron).append($wordLabel);
@@ -58,7 +58,7 @@ $(() => {
                     .addClass('document-link')
                     .attr('href', location.linkPath)
                     .attr('target', '_blank')
-                    .attr('title', 'Open document')
+                    .attr('title', 'Open')
                     .html('&#128279;'); // Link icon (🔗)
 
                 $locationLi.append($link);

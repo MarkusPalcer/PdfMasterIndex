@@ -1,23 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PdfMasterIndex.Service.Infrastructure.Persistence;
-using PdfMasterIndex.Service.Infrastructure.Persistence.Models;
 
 namespace PdfMasterIndex.Service.Presentation.v1;
-
-public class SearchResult
-{
-    public string Word { get; set; } = "";
-    public List<Location> Locations { get; set; } = [];
-
-    public class Location
-    {
-        public Guid DocumentId { get; set; }
-        public string DocumentName { get; set; } = "";
-        public string LinkPath { get; set; } = "";
-        public List<int> Pages { get; set; } = [];
-    }
-}
 
 [ApiController]
 public class SearchController(IRepository repository) : ControllerBase
@@ -54,7 +39,7 @@ public class SearchController(IRepository repository) : ControllerBase
                     DocumentId = documents.Key.Id,
                     DocumentName = documents.Key.Name,
                     LinkPath = $"/api/v1/documents/{documents.Key.Id}",
-                    Pages = documents.Select(x => x.Page).Distinct().ToList()
+                    Pages = documents.Select(x => x.Page).Distinct().Order().ToList()
                 });
             }
             results.Add(result);
