@@ -16,7 +16,18 @@ $(() => {
         }
     });
 
+    let wordTemplate;
+    let locationTemplate;
+
+    async function loadTemplates() {
+        wordTemplate = await $.get('search-result-word.html');
+        locationTemplate = await $.get('search-result-location.html');
+    }
+
     async function performSearch(query) {
+        if (!wordTemplate || !locationTemplate) {
+            await loadTemplates();
+        }
         $searchResultsContainer.empty();
         $searchSpinner.addClass('visible');
 
@@ -40,33 +51,22 @@ $(() => {
 
         const $ul = $('<ul>');
         results.forEach(result => {
-            const $wordLi = $('<li>');
-            const $header = $('<div>').addClass('collapsible-header');
-            const $chevron = $('<span>').addClass('chevron collapsed').attr('title', 'Toggle').html('&#9660;'); // Downward arrow
-            const $wordLabel = $('<strong>').text(result.word);
+            const $wordLi = $(wordTemplate);
+            const $header = $wordLi.find('.collapsible-header');
+            const $chevron = $wordLi.find('.chevron');
+            const $wordLabel = $wordLi.find('.word-label');
+            const $locationsUl = $wordLi.find('.document-locations');
             
-            $header.append($chevron).append($wordLabel);
-            $wordLi.append($header);
-
-            const $locationsUl = $('<ul>').addClass('collapsible-content collapsed');
+            $wordLabel.text(result.word);
 
             result.locations.forEach(location => {
-                const $locationLi = $('<li>');
-                $locationLi.append(document.createTextNode(location.documentName));
-
-                const $link = $('<a>')
-                    .addClass('document-link')
-                    .attr('href', location.linkPath)
-                    .attr('target', '_blank')
-                    .attr('title', 'Open')
-                    .html('&#128279;'); // Link icon (🔗)
-
-                $locationLi.append($link);
-                $locationLi.append($('<span>').addClass('pages-list').text('Pages: ' + location.pages.join(', ')));
+                const $locationLi = $(locationTemplate);
+                $locationLi.find('.document-name').text(location.documentName);
+                $locationLi.find('.document-link').attr('href', location.linkPath);
+                $locationLi.find('.pages-list').text('Pages: ' + location.pages.join(', '));
+                
                 $locationsUl.append($locationLi);
             });
-
-            $wordLi.append($locationsUl);
 
             $header.on('click', function() {
                 $chevron.toggleClass('collapsed');

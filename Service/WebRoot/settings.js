@@ -5,7 +5,11 @@ $(async () => {
     const $saveNewButton = $('#save-new-scan-folder');
     const $newEntryInputs = $('#new-scan-folder input, #new-scan-folder button, #new-scan-folder span');
     const $sourceFolderList = $('#source-folders-list');
-    const $template = $('#scan-folder-template');
+    let rowTemplate;
+
+    async function loadRowTemplate() {
+        rowTemplate = await $.get('settings-row.html');
+    }
 
     function updateSaveButtonState() {
         if ($newInternalPath.val().trim()) {
@@ -49,12 +53,15 @@ $(async () => {
     // Fetch and populate existing scan folders
     async function loadScanPaths() {
         try {
+            if (!rowTemplate) {
+                await loadRowTemplate();
+            }
             const scanPaths = await $.getJSON('/api/v1/scanpaths');
             // Remove existing rows except template and new row
-            $sourceFolderList.find('tr:not(#scan-folder-template, #new-scan-folder)').remove();
+            $sourceFolderList.find('tr:not(#new-scan-folder)').remove();
 
             scanPaths.forEach(path => {
-                const $row = $template.clone().removeAttr('id').removeClass('hidden');
+                const $row = $(rowTemplate);
                 $row.attr('data-id', path.id);
                 $row.attr('data-initial-internal', path.internalPath);
                 $row.attr('data-initial-external', path.externalPath);
