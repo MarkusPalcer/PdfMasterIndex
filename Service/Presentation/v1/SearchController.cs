@@ -20,7 +20,8 @@ public class SearchController(IRepository repository) : ControllerBase
                                .Where(x => x.Word.Value.Contains(query))
                                .Include(x => x.Document)
                                .Include(x => x.Document.ScanPath)
-                               .OrderBy(x => x.Word.Value)
+                               .OrderByDescending(x => x.Word.Value == query)
+                               .ThenBy(x => x.Word.Value)
                                .AsAsyncEnumerable()
                                .GroupBy(x => x.Word.Value);
 
