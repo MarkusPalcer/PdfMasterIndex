@@ -15,6 +15,10 @@ $(async () => {
     const $overlayContent = $('.overlay-content');
     const $overlayPrev = $('#overlay-prev');
     const $overlayNext = $('#overlay-next');
+    const $pageListWrapper = $('.overlay-pagelist-wrapper');
+    const $pageList = $('.overlay-pagelist');
+    const $panLeft = $('#pagelist-pan-left');
+    const $panRight = $('#pagelist-pan-right');
     const $canvas = $('#pdf-canvas');
     const canvas = $canvas[0];
     const renderScale = 3.0; // Render at triple size for sharpness
@@ -112,6 +116,88 @@ $(async () => {
         lastPinchDistance = null;
     });
 
+    let listIsDragging = false;
+    let listStartX;
+    let listScrollLeft;
+
+    $pageListWrapper.on('mousedown touchstart', (e) => {
+        listIsDragging = true;
+        $pageListWrapper.css('cursor', 'grabbing');
+        const clientX = e.type === 'touchstart' ? e.originalEvent.touches[0].clientX : e.clientX;
+        listStartX = clientX - $pageListWrapper.offset().left;
+        listScrollLeft = $pageListWrapper.scrollLeft();
+    });
+
+    $(window).on('mousemove touchmove', (e) => {
+        if (!listIsDragging) return;
+        const clientX = e.type === 'touchmove' ? e.originalEvent.touches[0].clientX : e.clientX;
+        const x = clientX - $pageListWrapper.offset().left;
+        const walk = (x - listStartX) * 1.5;
+        $pageListWrapper.scrollLeft(listScrollLeft - walk);
+        updatePanButtons();
+    });
+
+    $(window).on('mouseup touchend', () => {
+        if (listIsDragging) {
+            listIsDragging = false;
+            $pageListWrapper.css('cursor', '');
+        }
+    });
+
+    function updatePanButtons() {
+        const scrollLeft = $pageListWrapper.scrollLeft();
+        const maxScroll = $pageListWrapper[0].scrollWidth - $pageListWrapper[0].clientWidth;
+
+        if (scrollLeft <= 0) {
+            $panLeft.addClass('hidden');
+        } else {
+            $panLeft.removeClass('hidden');
+        }
+
+        if (scrollLeft >= maxScroll - 1) { // -1 for subpixel rounding issues
+            $panRight.addClass('hidden');
+        } else {
+            $panRight.removeClass('hidden');
+        }
+    }
+
+    $pageListWrapper.on('scroll', updatePanButtons);
+
+    $panLeft.on('click', () => {
+        panList(-8);
+    });
+
+    $panRight.on('click', () => {
+        panList(8);
+    });
+
+    function panList(direction) {
+        const $items = $pageList.find('li');
+        if ($items.length === 0) return;
+
+        const itemWidth = $items.outerWidth(true);
+        const scrollAmount = itemWidth * direction;
+        $pageListWrapper.animate({
+            scrollLeft: $pageListWrapper.scrollLeft() + scrollAmount
+        }, 300, updatePanButtons);
+    }
+
+    function scrollActiveIntoView() {
+        const $active = $pageList.find('li.active');
+        if ($active.length) {
+            const wrapperScrollLeft = $pageListWrapper.scrollLeft();
+            const wrapperWidth = $pageListWrapper.width();
+            const activeOffset = $active.position().left + wrapperScrollLeft;
+            const activeWidth = $active.outerWidth(true);
+
+            if (activeOffset < wrapperScrollLeft || (activeOffset + activeWidth) > (wrapperScrollLeft + wrapperWidth)) {
+                $pageListWrapper.animate({
+                    scrollLeft: activeOffset - (wrapperWidth / 2) + (activeWidth / 2)
+                }, 300, updatePanButtons);
+            }
+        }
+    }
+
     window.showDocumentOverlay = function(item) {
         pdfjsLib.getDocument(item.linkPath).promise.then(function (pdfDoc) {
             const $pageList = $('.overlay-pagelist');
@@ -136,6 +222,7 @@ $(async () => {
                             $(this).addClass('active');
                         }
                     });
+                    scrollActiveIntoView();
                     resetZoom(newPage);
                     currentPageNumber = pageNum;
                 });
@@ -152,6 +239,11 @@ $(async () => {
                 
                 $pageList.append($li);
             });
+
+            setTimeout(() => {
+                updatePanButtons();
+                scrollActiveIntoView();
+            }, 100);
 
             $overlayPrev.off('click').on('click', (e) => {
                 e.stopPropagation();

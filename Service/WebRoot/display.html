@@ -2,7 +2,13 @@
     <div class="overlay-background"></div>
     <a id="overlay-close" class="overlay-close" href="#" title="Close">&times;</a>
     <div class="overlay-container">
-        <ul class="overlay-pagelist"></ul>
+        <div class="overlay-pagelist-container">
+            <div id="pagelist-pan-left" class="pagelist-pan">&lsaquo;</div>
+            <div class="overlay-pagelist-wrapper">
+                <ul class="overlay-pagelist"></ul>
+            </div>
+            <div id="pagelist-pan-right" class="pagelist-pan">&rsaquo;</div>
+        </div>
         <div class="overlay-content">
             <div id="overlay-prev" class="overlay-nav overlay-nav-left">&lsaquo;</div>
             <canvas id="pdf-canvas"></canvas>
