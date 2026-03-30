@@ -68,9 +68,12 @@
 }
 
 .overlay-content canvas {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
+    cursor: grab;
+    transform-origin: center center;
+}
+
+.overlay-content canvas:active {
+    cursor: grabbing;
 }
 
 .overlay-content {
@@ -80,8 +83,43 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    overflow: auto;
+    overflow: hidden;
     background-color: #444;
+    position: relative;
+}
+
+.overlay-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px;
+    height: 80px;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-size: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    z-index: 1050;
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.overlay-nav:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.overlay-nav-left {
+    left: 0;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.overlay-nav-right {
+    right: 0;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
 }
 
 .overlay-content object {
