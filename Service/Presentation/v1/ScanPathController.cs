@@ -37,19 +37,14 @@ public class ScanPathController(IRepository repository) : ControllerBase
             }
         }
 
-        if (scanPath.InternalPath.IsNullOrEmpty())
+        if (scanPath.Path.IsNullOrEmpty())
         {
-            return BadRequest("InternalPath is required.");
-        }
-
-        if (scanPath.ExternalPath.IsNullOrEmpty())
-        {
-            scanPath.ExternalPath = scanPath.InternalPath;
+            return BadRequest("Path is required.");
         }
 
         if (scanPath.Name.IsNullOrEmpty())
         {
-            scanPath.Name = scanPath.ExternalPath;
+            scanPath.Name = scanPath.Path;
         }
         
         await repository.AddAsync(scanPath);
@@ -73,14 +68,9 @@ public class ScanPathController(IRepository repository) : ControllerBase
             existing.Name = scanPath.Name;
         }
         
-        if (!scanPath.InternalPath.IsNullOrEmpty())
+        if (!scanPath.Path.IsNullOrEmpty())
         {
-            existing.InternalPath = scanPath.InternalPath;
-        }
-        
-        if (!scanPath.ExternalPath.IsNullOrEmpty())
-        {
-            existing.ExternalPath = scanPath.ExternalPath;
+            existing.Path = scanPath.Path;
         }
 
         repository.Update(existing);

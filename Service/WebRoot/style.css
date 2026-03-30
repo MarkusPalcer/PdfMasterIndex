@@ -84,7 +84,7 @@ input[type="text"] {
     width: 100%;
 }
 
-.internal-path, .external-path, #new-internal-path, #new-external-path {
+.path, #new-path {
     font-family: monospace;
 }
 

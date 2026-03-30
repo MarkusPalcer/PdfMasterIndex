@@ -9,7 +9,6 @@ public class ScanPathConfiguration : IEntityTypeConfiguration<ScanPath>
     public void Configure(EntityTypeBuilder<ScanPath> builder)
     {
         builder.Property(x => x.Name).HasMaxLength(64);
-        builder.Property(x => x.ExternalPath).HasMaxLength(512);
-        builder.Property(x => x.InternalPath).HasMaxLength(512);
+        builder.Property(x => x.Path).HasMaxLength(512);
     }
 }

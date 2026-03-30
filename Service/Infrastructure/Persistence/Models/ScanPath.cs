@@ -17,18 +17,7 @@ public class ScanPath
     /// <summary>
     /// The path to the folder that contains the documents to be indexed as seen within the docker container
     /// </summary>
-    /// <remarks>
-    /// This will be used internally.
-    /// </remarks>
-    public string InternalPath { get; set; } = "";
-    
-    /// <summary>
-    /// The path to the folder that contains the documents to be indexed as seen outside the docker container
-    /// </summary>
-    /// <remarks>
-    /// This will be displayed in the UI.
-    /// </remarks>
-    public string ExternalPath { get; set; } = "";
+    public string Path { get; set; } = "";
     
     /// <summary>
     /// The documents that have been scanned within this scan path.

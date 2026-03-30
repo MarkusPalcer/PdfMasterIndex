@@ -23,7 +23,7 @@ public class DocumentController(IRepository repository) : ControllerBase
             return NotFound();
         }
 
-        var filePath = Path.Combine(result.ScanPath.InternalPath, result.FilePath);
+        var filePath = Path.Combine(result.ScanPath.Path, result.FilePath);
 
         if (!System.IO.File.Exists(filePath))
         {

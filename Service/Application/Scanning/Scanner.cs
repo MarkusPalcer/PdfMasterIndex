@@ -88,13 +88,13 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
 
         var knownFiles = path.Documents.ToDictionary(x => x.FilePath);
 
-        var files = new DirectoryInfo(path.InternalPath).GetFiles("*.pdf", SearchOption.AllDirectories);
+        var files = new DirectoryInfo(path.Path).GetFiles("*.pdf", SearchOption.AllDirectories);
         foreach (var file in files)
         {
             logger.ScanningFile(file.FullName);
             _cancellationSource.Token.ThrowIfCancellationRequested();
 
-            var relativePath = file.FullName[(path.InternalPath.Length + 1)..];
+            var relativePath = file.FullName[(path.Path.Length + 1)..];
             if (!knownFiles.Remove(relativePath, out var document))
             {
                 document = new Document
@@ -201,12 +201,11 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
     {
         Status.CurrentFileProgress = 0;
         logger.ImportProgress(document.FilePath);
-        var start = DateTime.UtcNow;
 
         await repository.ClearDocumentAsync(document);
         var words = await repository.Words.ToDictionaryAsync(x => x.Value);
 
-        using var pdf = PdfDocument.Open(Path.Combine(document.ScanPath.InternalPath, document.FilePath));
+        using var pdf = PdfDocument.Open(Path.Combine(document.ScanPath.Path, document.FilePath));
 
         var wordIndex = 0;
         var oldSaveTask = Task.CompletedTask;
@@ -248,9 +247,7 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
         await oldSaveTask;
         
         _cancellationSource.Token.ThrowIfCancellationRequested();
-        document.Hash = await HashFileAsync(new FileInfo(Path.Combine(document.ScanPath.InternalPath, document.FilePath)));
+        document.Hash = await HashFileAsync(new FileInfo(Path.Combine(document.ScanPath.Path, document.FilePath)));
         await repository.SaveChangesAsync();
-        var duration = DateTime.UtcNow - start;
-        logger.Log(LogLevel.Trace, "Duration: {Duration}", duration);
     }
 }
