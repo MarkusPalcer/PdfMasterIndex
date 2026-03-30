@@ -198,7 +198,40 @@ $(async () => {
         }
     }
 
-    window.showDocumentOverlay = function(item) {
+    function highlightText(page, viewport, ctx, searchTerm) {
+        page.getTextContent().then(textContent => {
+            const items = textContent.items;
+            const searchTermLower = searchTerm.toLowerCase();
+            
+            ctx.fillStyle = 'rgba(255, 255, 0, 0.4)'; // Semi-transparent yellow
+
+            items.forEach(item => {
+                const text = item.str.toLowerCase();
+                let index = text.indexOf(searchTermLower);
+                
+                while (index !== -1) {
+                    const tx = pdfjsLib.Util.transform(viewport.transform, item.transform);
+                    
+                    // We need to measure the text before the match to find the offset
+                    const beforeMatch = item.str.substring(0, index);
+                    const matchText = item.str.substring(index, index + searchTerm.length);
+                    
+                    // We can estimate the match position by calculating the ratio of the match position to the string length
+                    // and multiplying it by the total item width.
+                    const ratio = viewport.scale * item.width / item.str.length;
+                    const offset = index * ratio;
+                    const matchWidth = searchTerm.length * ratio;
+                    const itemHeight = item.height * viewport.scale;
+
+                    ctx.fillRect(tx[4] + offset, tx[5] - itemHeight, matchWidth, itemHeight);
+                    
+                    index = text.indexOf(searchTermLower, index + 1);
+                }
+            });
+        });
+    }
+
+    window.showDocumentOverlay = function(item, searchTerm) {
         pdfjsLib.getDocument(item.linkPath).promise.then(function (pdfDoc) {
             const $pageList = $('.overlay-pagelist');
             $pageList.empty();
@@ -214,7 +247,13 @@ $(async () => {
                         canvasContext: ctx,
                         viewport: viewport,
                     };
-                    newPage.render(renderContext);
+                    
+                    const renderTask = newPage.render(renderContext);
+                    renderTask.promise.then(() => {
+                        if (searchTerm) {
+                            highlightText(newPage, viewport, ctx, searchTerm);
+                        }
+                    });
                     
                     $pageList.find('li').removeClass('active');
                     $pageList.find('li').each(function() {
