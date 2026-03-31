@@ -5,12 +5,12 @@
 ### Manual
 
 - You will need to have an SQLServer running or install the SQLServer Express LocalDB driver
-- Download the application .ZIP archive
+- Download the application .ZIP archive (or build yourself)
 - Update the connection string in `appSettings.json` to match your SQLServer (or use the one from `appSettings.Development.json` if you installed the LocalDB driver)
 - Delete `appSettings.Development.json` 
 - Run the application
 
-### Docker (preferred)
+### Docker Compose (preferred)
 
 - Download the `compose.yaml.template` to the folder you want to have your service in
 - Rename it `docker-compose.yml`
@@ -24,6 +24,24 @@ SQL_PASSWORD=YourStrong!Passw0rd
   It does not matter much where you mount them to, but it's recommended to use the /data folder as data-root.
 - _Optional:_ Change the first number of the `ports`-entry to the port you want the service to be visible at
 - _Very optional:_ Configure your reverse-proxy to give access to the service
+
+## Updating
+
+### Manually
+
+- Download the latest version of the application (or build yourself)
+- Replace the files in the folder you installed the application in \
+  **WARNING:** Make sure that you preserve the custom connection string in `appSettings.json`
+- Run the application
+
+### Docker Compose (Preferred)
+
+- Run `docker compose pull` \
+  This will download the latest versions of the containers
+- Run `docker compose down` \
+  This will stop and delete the containers, preserving the volumes
+- Run `docker compose up -d` \
+  This will recreate the containers and start the service again
 
 ## Managing scan paths
 
