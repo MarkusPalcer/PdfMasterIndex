@@ -8,6 +8,10 @@ $(async () => {
     const overlayFragment = await $.get('display.html');
     $('body').append(overlayFragment);
 
+    if (window.pdfjsLib) {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.min.js';
+    }
+
     const $overlay = $('#document-overlay');
     const $overlayObject = $('#overlay-object');
     const $overlayClose = $('#overlay-close');
