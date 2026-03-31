@@ -4,17 +4,22 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.top-right-link {
+.navigation-container {
     position: fixed;
     top: 15px;
     right: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.navigation-container > a {
     font-size: 2em;
     color: #47312a;
     text-decoration: none;
     font-weight: bold;
 }
 
-.top-right-link:hover {
+.navigation-container > a:hover {
     color: #7a5347;
 }
 
