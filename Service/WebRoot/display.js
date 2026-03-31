@@ -28,6 +28,9 @@ $(async () => {
     const canvas = $canvas[0];
     const renderScale = 3.0; // Render at triple size for sharpness
 
+    let currentLoadingTask = null;
+    let currentRenderTask = null;
+
     let currentScale = 1;
     let minScale = 1;
     let translateX = 0;
@@ -238,12 +241,17 @@ $(async () => {
 
     window.showDocumentOverlay = function(item, searchTerm) {
         $pdfLoadingSpinner.addClass('visible');
-        pdfjsLib.getDocument(item.linkPath).promise.then(function (pdfDoc) {
+        currentLoadingTask = pdfjsLib.getDocument(item.linkPath);
+        currentLoadingTask.promise.then(function (pdfDoc) {
             const $pageList = $('.overlay-pagelist');
             $pageList.empty();
             let currentPageNumber = item.pages[0];
 
             function renderPage(pageNum) {
+                if (currentRenderTask) {
+                    currentRenderTask.cancel();
+                    currentRenderTask = null;
+                }
                 $pdfLoadingSpinner.addClass('visible');
                 pdfDoc.getPage(pageNum).then(newPage => {
                     const viewport = newPage.getViewport({ scale: renderScale });
@@ -255,13 +263,18 @@ $(async () => {
                         viewport: viewport,
                     };
                     
-                    const renderTask = newPage.render(renderContext);
-                    renderTask.promise.then(() => {
+                    currentRenderTask = newPage.render(renderContext);
+                    currentRenderTask.promise.then(() => {
+                        currentRenderTask = null;
                         if (searchTerm) {
                             highlightText(newPage, viewport, ctx, searchTerm);
                         }
                         $pdfLoadingSpinner.removeClass('visible');
                     }).catch(err => {
+                        currentRenderTask = null;
+                        if (err.name === 'RenderingCancelledException') {
+                            return;
+                        }
                         console.error("Error rendering page:", err);
                         $pdfLoadingSpinner.removeClass('visible');
                     });
@@ -311,6 +324,9 @@ $(async () => {
 
             renderPage(currentPageNumber);
         }).catch(function (error) {
+            if (error.name === 'LoadingCancelledException' || error.message === 'Loading cancelled') {
+                return;
+            }
             console.log("Error loading PDF file:", error);
             $pdfLoadingSpinner.removeClass('visible');
         });
@@ -320,6 +336,15 @@ $(async () => {
     };
 
     function hideOverlay() {
+        if (currentLoadingTask) {
+            currentLoadingTask.destroy();
+            currentLoadingTask = null;
+        }
+        if (currentRenderTask) {
+            currentRenderTask.cancel();
+            currentRenderTask = null;
+        }
+
         $overlay.addClass('hidden');
         $overlayObject.attr('data', '');
         
