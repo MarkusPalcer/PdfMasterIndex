@@ -23,6 +23,7 @@ $(async () => {
     const $pageList = $('.overlay-pagelist');
     const $panLeft = $('#pagelist-pan-left');
     const $panRight = $('#pagelist-pan-right');
+    const $pdfLoadingSpinner = $('#pdf-loading-spinner');
     const $canvas = $('#pdf-canvas');
     const canvas = $canvas[0];
     const renderScale = 3.0; // Render at triple size for sharpness
@@ -236,12 +237,14 @@ $(async () => {
     }
 
     window.showDocumentOverlay = function(item, searchTerm) {
+        $pdfLoadingSpinner.addClass('visible');
         pdfjsLib.getDocument(item.linkPath).promise.then(function (pdfDoc) {
             const $pageList = $('.overlay-pagelist');
             $pageList.empty();
             let currentPageNumber = item.pages[0];
 
             function renderPage(pageNum) {
+                $pdfLoadingSpinner.addClass('visible');
                 pdfDoc.getPage(pageNum).then(newPage => {
                     const viewport = newPage.getViewport({ scale: renderScale });
                     canvas.width = viewport.width;
@@ -257,6 +260,10 @@ $(async () => {
                         if (searchTerm) {
                             highlightText(newPage, viewport, ctx, searchTerm);
                         }
+                        $pdfLoadingSpinner.removeClass('visible');
+                    }).catch(err => {
+                        console.error("Error rendering page:", err);
+                        $pdfLoadingSpinner.removeClass('visible');
                     });
                     
                     $pageList.find('li').removeClass('active');
@@ -305,6 +312,7 @@ $(async () => {
             renderPage(currentPageNumber);
         }).catch(function (error) {
             console.log("Error loading PDF file:", error);
+            $pdfLoadingSpinner.removeClass('visible');
         });
         
         $overlay.removeClass('hidden');
