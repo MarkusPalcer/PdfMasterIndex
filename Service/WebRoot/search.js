@@ -38,7 +38,15 @@ $(() => {
         $searchSpinner.addClass('visible');
 
         try {
-            const results = await $.getJSON('/api/v1/search', { query: query });
+            const results = await $.ajax({
+                url: '/api/v1/search',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    query: query,
+                    searchPaths: null
+                })
+            });
 
             renderResults(results);
         } catch (err) {
