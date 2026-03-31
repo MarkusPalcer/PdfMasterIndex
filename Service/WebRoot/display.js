@@ -314,6 +314,17 @@ $(async () => {
     function hideOverlay() {
         $overlay.addClass('hidden');
         $overlayObject.attr('data', '');
+        
+        // Clear PDF canvas
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // Reset canvas size to 0 to prevent it from showing a huge empty space if it was previously zoomed
+        canvas.width = 0;
+        canvas.height = 0;
+        
+        // Clear page list
+        $pageList.empty();
+        
         $('body').css('overflow', ''); // Restore scroll
     }
 
