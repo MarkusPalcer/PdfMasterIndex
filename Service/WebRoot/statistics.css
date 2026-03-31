@@ -1,0 +1,74 @@
+.statistics-container {
+    margin: 20px;
+    padding: 10px;
+    background-color: #fcf5e5;
+    border: 1px solid #8b5a2b;
+}
+
+.collapsible-item {
+    margin-bottom: 5px;
+    border-bottom: 1px solid #e2d2a2;
+}
+
+.collapsible-header {
+    padding: 8px;
+    background-color: #e2d2a2;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+}
+
+.collapsible-header:hover {
+    background-color: #d8c48a;
+}
+
+.toggle-icon {
+    font-size: 0.8em;
+    transition: transform 0.2s ease;
+    width: 15px;
+    display: inline-block;
+}
+
+.collapsible-item.expanded > .collapsible-header > .toggle-icon {
+    transform: rotate(90deg);
+}
+
+.item-name {
+    font-weight: bold;
+}
+
+.item-info {
+    color: #5d4037;
+    font-size: 0.9em;
+}
+
+.collapsible-content {
+    padding: 10px 10px 10px 30px;
+}
+
+.document-details {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 5px;
+}
+
+.detail-row {
+    display: flex;
+    gap: 10px;
+}
+
+.detail-label {
+    font-weight: bold;
+    color: #47312a;
+}
+
+.detail-value {
+    color: #5d4037;
+}
+
+.spinner {
+    margin: 20px auto;
+}
