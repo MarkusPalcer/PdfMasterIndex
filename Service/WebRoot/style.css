@@ -106,3 +106,38 @@ input[type="text"] {
     pointer-events: none;
     cursor: not-allowed !important;
 }
+
+@media (max-width: 600px) {
+    body {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+        margin-top: 50px; /* Make room for navigation icons if needed */
+    }
+
+    .navigation-container {
+        top: 10px;
+        right: 10px;
+        gap: 5px;
+    }
+
+    .navigation-container > a {
+        font-size: 1.5em;
+    }
+
+    table {
+        display: block;
+        overflow-x: auto;
+    }
+
+    table th, table td {
+        padding: 5px;
+        font-size: 0.9em;
+    }
+
+    input[type="text"] {
+        font-size: 16px; /* Prevents auto-zoom on iOS */
+    }
+}

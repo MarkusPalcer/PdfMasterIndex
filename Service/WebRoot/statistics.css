@@ -72,3 +72,25 @@
 .spinner {
     margin: 20px auto;
 }
+
+@media (max-width: 600px) {
+    .statistics-container {
+        margin: 10px 0;
+        padding: 5px;
+    }
+
+    .collapsible-header {
+        padding: 10px;
+        font-size: 0.9em;
+    }
+
+    .collapsible-content {
+        padding: 10px 5px 10px 15px;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        gap: 2px;
+        margin-bottom: 5px;
+    }
+}

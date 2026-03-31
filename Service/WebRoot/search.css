@@ -184,3 +184,36 @@
     color: #9e9e9e;
     font-size: 0.8em;
 }
+
+@media (max-width: 600px) {
+    .search-container {
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    #search-results-container {
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    #search-input {
+        padding: 10px 80px 10px 15px; /* More space for icons on small screens */
+        font-size: 16px;
+    }
+
+    .search-icon {
+        right: 10px;
+    }
+
+    .filter-icon {
+        right: 35px;
+    }
+
+    #search-spinner {
+        right: 60px;
+    }
+
+    .document-link {
+        font-size: 1.2em;
+    }
+}
