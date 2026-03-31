@@ -483,3 +483,6 @@ fabric.properties
 *.pdf
 *.db
 *.db-*
+
+docker-compose.yml
+docker-compose.yaml
