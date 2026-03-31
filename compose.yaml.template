@@ -1,9 +1,6 @@
 ﻿services:
   service:
-    image: service
-    build:
-      context: .
-      dockerfile: Service/Dockerfile
+    image: masterofvdl/pdfmasterindex
     depends_on:
       - database
     environment:
