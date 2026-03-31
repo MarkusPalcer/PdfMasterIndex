@@ -12,7 +12,11 @@
 
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Search..." />
+            <span id="filter-icon" class="filter-icon" title="Filter by ScanPaths">&#x1F6E0;</span>
             <span class="search-icon" title="Search">&#128269;</span>
+            <div id="filter-popup" class="filter-popup hidden">
+                <ul id="scanpaths-list"></ul>
+            </div>
             <div id="search-error" class="search-error-message">Only searching for single words is allowed.</div>
             <div id="search-spinner" class="spinner"></div>
         </div>

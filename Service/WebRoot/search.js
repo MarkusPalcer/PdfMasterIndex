@@ -4,6 +4,56 @@ $(() => {
     const $searchError = $('#search-error');
     const $searchSpinner = $('#search-spinner');
     const $searchResultsContainer = $('#search-results-container');
+    const $filterIcon = $('#filter-icon');
+    const $filterPopup = $('#filter-popup');
+    const $scanPathsList = $('#scanpaths-list');
+
+    let allScanPaths = [];
+    let activeScanPathIds = new Set();
+
+    async function fetchScanPaths() {
+        try {
+            allScanPaths = await $.getJSON('/api/v1/scanpaths');
+            activeScanPathIds = new Set(allScanPaths.map(sp => sp.id));
+            renderScanPaths();
+        } catch (err) {
+            console.error('Failed to fetch ScanPaths:', err);
+        }
+    }
+
+    function renderScanPaths() {
+        $scanPathsList.empty();
+        allScanPaths.forEach(sp => {
+            const isOn = activeScanPathIds.has(sp.id);
+            const $li = $('<li>')
+                .text(sp.name)
+                .addClass(isOn ? 'on' : 'off')
+                .on('click', (e) => {
+                    e.stopPropagation();
+                    if (activeScanPathIds.has(sp.id)) {
+                        activeScanPathIds.delete(sp.id);
+                    } else {
+                        activeScanPathIds.add(sp.id);
+                    }
+                    renderScanPaths();
+                    onSearchTriggered();
+                });
+            $scanPathsList.append($li);
+        });
+    }
+
+    $filterIcon.on('click', (e) => {
+        e.stopPropagation();
+        $filterPopup.toggleClass('hidden');
+    });
+
+    $(document).on('click', (e) => {
+        if (!$filterPopup.is(e.target) && $filterPopup.has(e.target).length === 0 && !$filterIcon.is(e.target)) {
+            $filterPopup.addClass('hidden');
+        }
+    });
+
+    fetchScanPaths();
 
     let searchTimeout;
     $searchInput.on('input', function () {
@@ -44,7 +94,7 @@ $(() => {
                 contentType: 'application/json',
                 data: JSON.stringify({
                     query: query,
-                    searchPaths: null
+                    searchPaths: Array.from(activeScanPathIds)
                 })
             });
 
