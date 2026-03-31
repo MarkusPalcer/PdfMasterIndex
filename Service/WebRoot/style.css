@@ -9,13 +9,13 @@ body {
     top: 15px;
     right: 15px;
     font-size: 2em;
-    color: #6c757d;
+    color: #47312a;
     text-decoration: none;
     font-weight: bold;
 }
 
 .top-right-link:hover {
-    color: #495057;
+    color: #7a5347;
 }
 
 .hidden {
