@@ -9,6 +9,7 @@
     environment:
       # The password here must be the same as the one in the database
       - ConnectionStrings__DefaultConnection=Server=database;User Id=sa;Password=YourStrong!Passw0rd;TrustServerCertificate=True
+      - ASPNETCORE_ENVIRONMENT=Production
     ports:
       - "8080:8080"
     # Mount volumes with data to be indexed
