@@ -34,7 +34,7 @@ public class Repository(MasterIndexDbContext context) : IRepository
 
     public async Task ClearDocumentAsync(Document document)
     {
-        document.Hash.Value = [];
+        document.Hash = string.Empty;
         await context.SaveChangesAsync();
         
         await context.Occurrences

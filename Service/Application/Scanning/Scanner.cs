@@ -1,5 +1,6 @@
 using AutoInterfaceAttributes;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using PdfMasterIndex.Service.Attributes;
 using PdfMasterIndex.Service.Infrastructure.Persistence;
 using PdfMasterIndex.Service.Infrastructure.Persistence.Models;
@@ -102,7 +103,7 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
                     ScanPath = path,
                     FilePath = relativePath,
                     Name = file.Name,
-                    Hash = new Hash { Algorithm = Algorithm.Sha256 }
+                    Hash = string.Empty
                 };
 
                 await repository.AddAsync(document);
@@ -111,13 +112,13 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
                 continue;
             }
 
-            if (document.Hash.Value.Length == 0)
+            if (document.Hash.IsNullOrEmpty())
             {
                 logger.ChangedFile();
             }
             else
             {
-                Hash hash;
+                string hash;
                 try
                 {
                     hash = await HashFileAsync(file);
@@ -132,7 +133,7 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
                     continue;
                 }
                 
-                if (!document.Hash.Value.SequenceEqual(hash.Value))
+                if (document.Hash != hash)
                 {
                     logger.ChangedFile();
                 }
@@ -148,14 +149,11 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
         await repository.SaveChangesAsync();
     }
 
-    private async Task<Hash> HashFileAsync(FileInfo file)
+    private async Task<string> HashFileAsync(FileInfo file)
     {
         await using var stream = File.OpenRead(file.FullName);
-        return new Hash
-        {
-            Algorithm = Algorithm.Sha256,
-            Value = await System.Security.Cryptography.SHA256.HashDataAsync(stream, _cancellationSource.Token)
-        };
+        var hash = await System.Security.Cryptography.SHA256.HashDataAsync(stream, _cancellationSource.Token);
+        return Convert.ToBase64String(hash);
     }
 
     private async Task ProcessFiles()
@@ -168,7 +166,7 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
 
         var documentsToScan = await repository.Documents
                                               .Include(x => x.ScanPath)
-                                              .Where(x => x.Hash.Value.Length == 0)
+                                              .Where(x => x.Hash == string.Empty)
                                               .ToArrayAsync();
 
         var documentCount = documentsToScan.Length;

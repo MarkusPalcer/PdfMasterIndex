@@ -27,7 +27,7 @@ public class Document
     /// </summary>
     public required ScanPath ScanPath { get; set; }
 
-    public required Hash Hash { get; set; } = new();
+    public required string Hash { get; set; }
     
     [JsonIgnore]
     public List<Occurrence> Content { get; set; } = []; 
