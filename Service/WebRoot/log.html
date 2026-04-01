@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Master Index - Logs</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="log.css">
+</head>
+<body>
+    <h1>PDF Master Index – Logs</h1>
+    <div class="log-container">
+        <div id="log-spinner" class="spinner visible"></div>
+        <table id="log-table" class="hidden">
+            <thead>
+                <tr>
+                    <th>Timestamp (UTC)</th>
+                    <th>Severity</th>
+                    <th>Category</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody id="log-body">
+            </tbody>
+        </table>
+    </div>
+    <script src="lib/jquery.min.js"></script>
+    <script src="nav.js"></script>
+    <script src="log.js"></script>
+</body>
+</html>

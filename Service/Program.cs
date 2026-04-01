@@ -2,6 +2,7 @@ using System.Reflection;
 using AutoInterfaceAttributes;
 using Microsoft.EntityFrameworkCore;
 using PdfMasterIndex.Service.Attributes;
+using PdfMasterIndex.Service.Infrastructure.Logging;
 using PdfMasterIndex.Service.Infrastructure.Persistence;
 using PdfMasterIndex.Service.Presentation.v1;
 
@@ -16,6 +17,10 @@ builder.Services.AddControllers();
 builder.Services.AddSignalR();
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddHistory();
 
 builder.Services.Scan(scan =>
                           scan.FromAssemblyOf<Program>()

@@ -31,7 +31,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Infrastructure\" />
       <Folder Include="Infrastructure\Persistence\Migrations\" />
       <Folder Include="WebRoot\lib\" />
     </ItemGroup>

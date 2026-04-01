@@ -1,0 +1,52 @@
+.log-container {
+    padding: 20px;
+    margin: 0 auto;
+    max-width: 1200px;
+}
+
+#log-table {
+    width: 100%;
+    font-size: 0.9em;
+}
+
+#log-table th {
+    position: sticky;
+    top: 0;
+}
+
+#log-table td {
+    vertical-align: top;
+}
+
+.severity-0, .severity-1, .severity-2, .severity-3, .severity-4, .severity-5, .severity-6 {
+    font-weight: bold;
+}
+
+.severity-0 { color: #6c757d; } /* Trace */
+.severity-1 { color: #6c757d; } /* Debug */
+.severity-2 { color: #28a745; } /* Information */
+.severity-3 { color: #ffc107; } /* Warning */
+.severity-4 { color: #dc3545; } /* Error */
+.severity-5 { color: #dc3545; } /* Critical */
+.severity-6 { color: #6c757d; } /* None */
+
+.timestamp-col {
+    white-space: nowrap;
+    width: 180px;
+}
+
+.severity-col {
+    width: 100px;
+}
+
+.category-col {
+    width: 250px;
+    word-break: break-all;
+}
+
+#log-spinner {
+    margin: 20px auto;
+    display: block;
+    width: 30px;
+    height: 30px;
+}
