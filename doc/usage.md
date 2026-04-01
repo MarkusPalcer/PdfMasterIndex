@@ -45,6 +45,8 @@ SQL_PASSWORD=YourStrong!Passw0rd
 
 ## Managing scan paths
 
+![image](settings.png)
+
 In order to manage scan paths you need to switch to the settings page which is accessible through the cogwheel icon in the top-left corner.
 The cogwheel will turn into an "X" which brings you back to the main page.
 
@@ -76,6 +78,8 @@ If you made a mistake, you can revert to the data in the database by clicking th
 
 ## Indexing documents
 
+![image](indexing.png)
+
 To index the documents from the scan paths you have configured, click the little refresh-icon in the top right corner of the widget at the bottom of the screen.
 
 Indexing can take a while and it happens in two stages:
@@ -97,7 +101,9 @@ You can stop indexing by clicking on the `X` icon in the top right corner of the
 
 Once indexing is completed (or has been aborted), the widget will hide the progress and go back to its idle-state.
 
-## Searching for word
+## Searching for words
+
+![image](start.png)
 
 ### Simple search and how to interpret search results
 
@@ -109,11 +115,15 @@ Click the word to reveal or hide in which documents it appears and on which page
 If you click the icon, the document viewer will be opened on the first page that contains the word.
 For more on the document viewer, see the chapter `The document viewer`
 
+![image](search.png)
+
 ### Search for multiple words
 
 The index does not support searching for more than one word
 
 ### Search only in a subset of documents
+
+![image](filter.png)
 
 You can limit search to a set of scan paths. 
 
@@ -124,6 +134,8 @@ By clicking an entry you can toggle it on and off.
 Search is only performed in scan paths which are turned on.
 
 ## The document viewer
+
+![image](viewer.png)
 
 By clicking on the icon next to a document in the search results, the document viewer will open.
 You can close it by clicking the `X` in its top right corner.
