@@ -170,40 +170,47 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
         using var scope = scopeFactory.CreateScope();
         _repository = scope.ServiceProvider.GetRequiredService<IRepository>();
 
-        var documentsToScan = await _repository.Documents
-                                               .Include(x => x.ScanPath)
-                                               .Where(x => x.Hash == string.Empty)
-                                               .ToArrayAsync();
-
-        var documentCount = documentsToScan.Length;
-        var scanned = 0;
-
-        logger.ImportStarted();
-
-        foreach (var document in documentsToScan)
+        try
         {
-            _cancellationSource.Token.ThrowIfCancellationRequested();
 
-            try
-            {
-                await ProcessFile(document);
-            }
-            catch (OperationCanceledException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                logger.ImportFailed(document.FilePath, ex);
-            }
+            var documentsToScan = await _repository.Documents
+                                                   .Include(x => x.ScanPath)
+                                                   .Where(x => x.Hash == string.Empty)
+                                                   .ToArrayAsync();
 
-            scanned++;
-            Status.CurrentStepProgress = scanned / (double)documentCount;
+            var documentCount = documentsToScan.Length;
+            var scanned = 0;
+
+            logger.ImportStarted();
+
+            foreach (var document in documentsToScan)
+            {
+                _cancellationSource.Token.ThrowIfCancellationRequested();
+
+                try
+                {
+                    await ProcessFile(document);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    logger.ImportFailed(document.FilePath, ex);
+                }
+
+                scanned++;
+                Status.CurrentStepProgress = scanned / (double)documentCount;
+            }
+        }
+        finally
+        {
+            _repository = null!;
         }
 
         logger.ImportFinished();
     }
-
 
     private async Task ProcessFile(Document document)
     {
@@ -232,7 +239,8 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
             if (!words.TryGetValue(word, out var wordEntity))
             {
                 wordEntity = new Word
-                {
+                { 
+                    Id = Guid.NewGuid(),
                     Value = word.ToString()
                 };
                 _newWords.Add(wordEntity);
@@ -241,6 +249,7 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
 
             var occurrence = new Occurrence
             {
+                Id = Guid.NewGuid(),
                 Document = document,
                 DocumentPosition = positionInDocument,
                 Page = page,
@@ -252,19 +261,11 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
 
             Status.CurrentFileProgress = page / (double)numberOfPages;
         });
-
-        foreach (var newWord in _newWords)
-        {
-            await _repository.AddAsync(newWord);
-        }
-
-        foreach (var newOccurrence in _newOccurrences)
-        {
-            await _repository.AddAsync(newOccurrence);
-        }
-
+        
+        await _repository.BulkInsertAsync(_newWords);
+        await _repository.BulkInsertAsync(_newOccurrences);
+        
         document.Hash = await HashFileAsync(new FileInfo(Path.Combine(document.ScanPath.Path, document.FilePath)));
-
         await _repository.SaveChangesAsync();
     }
 }

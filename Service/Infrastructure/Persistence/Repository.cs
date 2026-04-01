@@ -1,4 +1,5 @@
 using AutoInterfaceAttributes;
+using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using PdfMasterIndex.Service.Attributes;
@@ -30,6 +31,11 @@ public class Repository(MasterIndexDbContext context) : IRepository
     public void Remove<T>(T entity) where T : class
     {
         context.Remove(entity);
+    }
+
+    public async Task BulkInsertAsync<T>(IEnumerable<T> entities) where T : class
+    {
+        await context.BulkInsertAsync(entities);
     }
 
     public async Task ClearDocumentAsync(Document document)
