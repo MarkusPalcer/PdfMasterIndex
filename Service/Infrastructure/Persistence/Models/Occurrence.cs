@@ -10,12 +10,12 @@ public class Occurrence
     /// <summary>
     /// The word that is being indexed.
     /// </summary>
-    public Word Word { get; set; }
+    public required Word Word { get; set; }
     
     /// <summary>
     /// The document that contains the word.
     /// </summary>
-    public Document Document { get; set; }
+    public required Document Document { get; set; }
     
     /// <summary>
     /// The zero-based page that contains the word.

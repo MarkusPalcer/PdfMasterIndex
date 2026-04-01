@@ -43,4 +43,7 @@ public static partial class LogExtensions
     
     [LoggerMessage(LogLevel.Information, "Scan cancelled")]
     public static partial void Cancelled(this ILogger logger);
+    
+    [LoggerMessage(LogLevel.Error, "The word {word} on page {page} is too long; skipping")]
+    public static partial void WordTooLong(this ILogger logger, string word, int page); 
 }

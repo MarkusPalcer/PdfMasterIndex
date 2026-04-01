@@ -1,4 +1,4 @@
-namespace PdfMasterIndex.Service.Application;
+namespace PdfMasterIndex.Service.Application.Scanning;
 
 public enum ScanStep
 {

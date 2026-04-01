@@ -16,9 +16,9 @@ public class StatisticsController(MasterIndexDbContext context) : ControllerBase
     public class Document
     {
         public string Name { get; set; } = "";
-        public int Pages { get; set; } = 0;
-        public int Words { get; set; } = 0;
-        public int DistinctWords { get; set; } = 0;
+        public int Pages { get; set; }
+        public int Words { get; set; }
+        public int DistinctWords { get; set; }
     }
     
     [HttpGet("/api/v1/statistics")]

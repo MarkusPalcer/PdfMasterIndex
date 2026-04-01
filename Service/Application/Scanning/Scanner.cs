@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PdfMasterIndex.Service.Attributes;
 using PdfMasterIndex.Service.Infrastructure.Persistence;
+using PdfMasterIndex.Service.Infrastructure.Persistence.Configurations;
 using PdfMasterIndex.Service.Infrastructure.Persistence.Models;
 using UglyToad.PdfPig;
 
@@ -15,6 +16,11 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
     public IScanStatus Status { get; } = status;
     private Task _scanTask = Task.CompletedTask;
     private CancellationTokenSource _cancellationSource = new();
+
+    private readonly List<Word> _newWords = [];
+    private readonly List<Occurrence> _newOccurrences = [];
+
+    private IRepository _repository = null!;
 
     public void Start()
     {
@@ -132,7 +138,7 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
                     logger.ScanningFailed(file.FullName, ex);
                     continue;
                 }
-                
+
                 if (document.Hash != hash)
                 {
                     logger.ChangedFile();
@@ -162,12 +168,12 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
         Status.CurrentStepProgress = 0;
 
         using var scope = scopeFactory.CreateScope();
-        var repository = scope.ServiceProvider.GetRequiredService<IRepository>();
+        _repository = scope.ServiceProvider.GetRequiredService<IRepository>();
 
-        var documentsToScan = await repository.Documents
-                                              .Include(x => x.ScanPath)
-                                              .Where(x => x.Hash == string.Empty)
-                                              .ToArrayAsync();
+        var documentsToScan = await _repository.Documents
+                                               .Include(x => x.ScanPath)
+                                               .Where(x => x.Hash == string.Empty)
+                                               .ToArrayAsync();
 
         var documentCount = documentsToScan.Length;
         var scanned = 0;
@@ -180,9 +186,12 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
 
             try
             {
-                await ProcessFile(document, repository);
+                await ProcessFile(document);
             }
-            catch (OperationCanceledException) { throw; }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 logger.ImportFailed(document.FilePath, ex);
@@ -191,61 +200,71 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
             scanned++;
             Status.CurrentStepProgress = scanned / (double)documentCount;
         }
-        
+
         logger.ImportFinished();
     }
 
-    private async Task ProcessFile(Document document, IRepository repository)
+
+    private async Task ProcessFile(Document document)
     {
         Status.CurrentFileProgress = 0;
         logger.ImportProgress(document.FilePath);
 
-        await repository.ClearDocumentAsync(document);
-        var words = await repository.Words.ToDictionaryAsync(x => x.Value);
+        await _repository.ClearDocumentAsync(document);
+        var words = new WordCollection(await _repository.Words.ToListAsync());
+        _newWords.Clear();
+        _newOccurrences.Clear();
 
         using var pdf = PdfDocument.Open(Path.Combine(document.ScanPath.Path, document.FilePath));
 
-        var wordIndex = 0;
-        var oldSaveTask = Task.CompletedTask;
-        
-        foreach (var word in WordSplitter.SplitWords(pdf.GetPages()))
+        var numberOfPages = pdf.NumberOfPages;
+
+        WordSplitter.SplitWords(pdf.GetPages(), (word, page, positionInPage, positionInDocument) =>
         {
             _cancellationSource.Token.ThrowIfCancellationRequested();
-            
-            if (!words.TryGetValue(word.Word, out var wordEntity))
+
+            if (word.Length > WordConfiguration.MaxWordLength)
+            {
+                logger.WordTooLong(word.ToString(), page);
+                return;
+            }
+
+            if (!words.TryGetValue(word, out var wordEntity))
             {
                 wordEntity = new Word
                 {
-                    Value = word.Word
+                    Value = word.ToString()
                 };
-                await repository.AddAsync(wordEntity);
-                words[word.Word] = wordEntity;
+                _newWords.Add(wordEntity);
+                words.Add(wordEntity);
             }
-            
+
             var occurrence = new Occurrence
             {
                 Document = document,
-                DocumentPosition = word.PositionInDocument,
-                Page = word.Page,
-                PagePosition = word.PositionInPage,
+                DocumentPosition = positionInDocument,
+                Page = page,
+                PagePosition = positionInPage,
                 Word = wordEntity
             };
-            
-            await repository.AddAsync(occurrence);
-            
-            Status.CurrentFileProgress = word.Page / (double)pdf.NumberOfPages;
 
-            wordIndex++;
-            if (wordIndex % 1000 == 0)
-            {
-                await repository.SaveChangesAsync();
-            }
+            _newOccurrences.Add(occurrence);
+
+            Status.CurrentFileProgress = page / (double)numberOfPages;
+        });
+
+        foreach (var newWord in _newWords)
+        {
+            await _repository.AddAsync(newWord);
         }
 
-        await oldSaveTask;
-        
-        _cancellationSource.Token.ThrowIfCancellationRequested();
+        foreach (var newOccurrence in _newOccurrences)
+        {
+            await _repository.AddAsync(newOccurrence);
+        }
+
         document.Hash = await HashFileAsync(new FileInfo(Path.Combine(document.ScanPath.Path, document.FilePath)));
-        await repository.SaveChangesAsync();
+
+        await _repository.SaveChangesAsync();
     }
 }

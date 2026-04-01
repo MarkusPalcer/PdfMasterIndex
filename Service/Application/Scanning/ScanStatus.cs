@@ -9,44 +9,40 @@ namespace PdfMasterIndex.Service.Application.Scanning;
 [Lifetime(ServiceLifetime.Singleton)]
 public class ScanStatus(IHubContext<ScanHub> hubContext) : IScanStatus
 {
-    private ScanStep _currentStep = ScanStep.Idle;
-    private double _currentStepProgress = 0;
-    private double _currentFileProgress = 0;
-
     public bool IsRunning => CurrentStep is not ScanStep.Idle and not ScanStep.Cancelling;
 
     public ScanStep CurrentStep
     {
-        get => _currentStep;
+        get;
         set
         {
-            if (_currentStep == value) return;
-            _currentStep = value;
+            if (field == value) return;
+            field = value;
             Notify();
         }
-    }
+    } = ScanStep.Idle;
 
     public double CurrentStepProgress
     {
-        get => _currentStepProgress;
+        get;
         set
         {
-            if (Math.Abs(_currentStepProgress - value) < 0.0001) return;
-            _currentStepProgress = value;
+            if (Math.Abs(field - value) < 0.0001) return;
+            field = value;
             Notify();
         }
-    }
+    } = 0;
 
     public double CurrentFileProgress
     {
-        get => _currentFileProgress;
+        get;
         set
         {
-            if (Math.Abs(_currentFileProgress - value) < 0.0001) return;
-            _currentFileProgress = value;
+            if (Math.Abs(field - value) < 0.0001) return;
+            field = value;
             Notify();
         }
-    }
+    } = 0;
 
     private void Notify()
     {
