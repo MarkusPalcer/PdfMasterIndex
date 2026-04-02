@@ -48,4 +48,5 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
 app.MapHub<ScanHub>("/scan-hub");
+app.MapHub<LogHub>("/log-hub");
 app.Run();
