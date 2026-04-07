@@ -1,4 +1,4 @@
-namespace PdfMasterIndex.Service.Infrastructure.Persistence.Models;
+namespace PdfMasterIndex.Service.Domain.Index;
 
 public class Occurrence
 {

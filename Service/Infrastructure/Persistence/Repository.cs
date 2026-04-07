@@ -3,7 +3,7 @@ using EFCore.BulkExtensions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using PdfMasterIndex.Service.Attributes;
-using PdfMasterIndex.Service.Infrastructure.Persistence.Models;
+using PdfMasterIndex.Service.Domain.Index;
 
 namespace PdfMasterIndex.Service.Infrastructure.Persistence;
 

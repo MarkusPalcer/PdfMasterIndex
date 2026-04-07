@@ -2,9 +2,9 @@ using AutoInterfaceAttributes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using PdfMasterIndex.Service.Attributes;
+using PdfMasterIndex.Service.Domain.Index;
 using PdfMasterIndex.Service.Infrastructure.Persistence;
 using PdfMasterIndex.Service.Infrastructure.Persistence.Configurations;
-using PdfMasterIndex.Service.Infrastructure.Persistence.Models;
 using UglyToad.PdfPig;
 
 namespace PdfMasterIndex.Service.Application.Scanning;

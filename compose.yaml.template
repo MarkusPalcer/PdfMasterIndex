@@ -8,11 +8,16 @@
       # The password here must be the same as the one in the database
       - ConnectionStrings__DefaultConnection=Server=database;User Id=sa;Password=${SQL_PASSWORD};TrustServerCertificate=True
       - ASPNETCORE_ENVIRONMENT=Production
+      # Uncomment this if you mount the config file to a different location as the default
+      # - CONFIG_PATH=/config.json
     ports:
       - "8080:8080"
     # Mount volumes with data to be indexed
     volumes:
       - data:/data
+      # Uncomment this to mount a local config file
+      # In this case you can comment out the database volume below as it can always be regenerated from the config file 
+      #  - ./config.json:/config.json
 
   database:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -27,12 +32,15 @@
       - ACCEPT_EULA=Y
       # The password here must be the same as the one in the service 
       - MSSQL_SA_PASSWORD=${SQL_PASSWORD}
+    # If you use a config file, you can comment out the database volume and have the database itself destroyed when doing
+    # docker compose down
     volumes:
       - database_volume:/var/opt/mssql
 
 volumes:
   database_volume:
     # You can configure this to mount a real folder or network share
+    # Or you remove the volume entirely and let the database be recreated on startup by mounting a config file
   
   # And here you can mount folders with data to be indexed, for example a network share
   data:

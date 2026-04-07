@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace PdfMasterIndex.Service.Infrastructure.Persistence.Models;
+namespace PdfMasterIndex.Service.Domain.Index;
 
 /// <summary>
 /// A document that is being indexed.

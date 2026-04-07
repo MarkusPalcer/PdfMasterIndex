@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using PdfMasterIndex.Service.Infrastructure.Persistence.Models;
+using PdfMasterIndex.Service.Domain.Index;
 
 namespace PdfMasterIndex.Service.Infrastructure.Persistence;
 

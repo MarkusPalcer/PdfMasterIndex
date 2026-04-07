@@ -23,6 +23,11 @@ SQL_PASSWORD=YourStrong!Passw0rd
 - Replace the `data` volume with one (or multiple) volumes or mounts that contain your PDF files. \
   It does not matter much where you mount them to, but it's recommended to use the /data folder as data-root.
 - _Optional:_ Change the first number of the `ports`-entry to the port you want the service to be visible at
+- _Optional:_ Uncomment or set up the mount for `config.json` and remove the database volume.
+
+  This means the database itself will not be stored outside of the container and will have to be recreated when doing `docker compose down`.
+
+  However, this is only a time-consuming thing and can save you the hassle of managing where the database is stored
 - _Very optional:_ Configure your reverse-proxy to give access to the service
 
 ## Updating
@@ -40,6 +45,8 @@ SQL_PASSWORD=YourStrong!Passw0rd
   This will download the latest versions of the containers
 - Run `docker compose down` \
   This will stop and delete the containers, preserving the volumes
+
+  You can also do `docker compose down --volumes` to delete the volumes as well, bu this will also delete the database and if you don't have the config-file mounted, it means you lose the configuration
 - Run `docker compose up -d` \
   This will recreate the containers and start the service again
 

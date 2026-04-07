@@ -20,4 +20,5 @@ RUN dotnet publish "./Service.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+ENV CONFIG_PATH="/config.json"
 ENTRYPOINT ["dotnet", "PdfMasterIndex.Service.dll"]

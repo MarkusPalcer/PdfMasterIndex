@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using PdfMasterIndex.Service.Infrastructure.Persistence.Models;
+using PdfMasterIndex.Service.Domain.Index;
 
 namespace PdfMasterIndex.Service.Infrastructure.Persistence.Configurations;
 

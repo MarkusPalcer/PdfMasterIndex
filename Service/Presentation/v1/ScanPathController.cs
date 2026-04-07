@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using PdfMasterIndex.Service.Domain.Index;
 using PdfMasterIndex.Service.Infrastructure.Persistence;
-using PdfMasterIndex.Service.Infrastructure.Persistence.Models;
 
 namespace PdfMasterIndex.Service.Presentation.v1;
 
 [ApiController]
-public class ScanPathController(IRepository repository) : ControllerBase
+public class ScanPathController(IRepository repository, ISettingsRepository settingsRepository) : ControllerBase
 {
     [HttpGet("/api/v1/scanpaths")]
     public async Task<ScanPath[]> Get() => await repository.ScanPaths.ToArrayAsync();
@@ -50,6 +50,13 @@ public class ScanPathController(IRepository repository) : ControllerBase
         await repository.AddAsync(scanPath);
         await repository.SaveChangesAsync();
 
+        var settings = await settingsRepository.GetSettingsAsync();
+        settings.ScanPaths[scanPath.Path] = new PdfMasterIndex.Service.Domain.Settings.ScanPath
+        {
+            Name = scanPath.Name
+        };
+        await settingsRepository.SaveSettingsAsync(settings);
+
         return CreatedAtAction(nameof(Get), new { id = scanPath.Id }, scanPath);
     }
 
@@ -63,19 +70,39 @@ public class ScanPathController(IRepository repository) : ControllerBase
             return NotFound();
         }
 
+        var settings = await settingsRepository.GetSettingsAsync();
+        var settingsEntry = settings.ScanPaths.GetValueOrDefault(existing.Path);
+        
+        if (settingsEntry is null)
+        {
+            settingsEntry = new PdfMasterIndex.Service.Domain.Settings.ScanPath
+            {
+                Name = scanPath.Name
+            };
+            settings.ScanPaths[scanPath.Path] = settingsEntry;
+        }
+        else
+        {
+            settings.ScanPaths.Remove(existing.Path);
+        }
+        
         if (!scanPath.Name.IsNullOrEmpty())
         {
             existing.Name = scanPath.Name;
+            settingsEntry.Name = scanPath.Name;
         }
         
         if (!scanPath.Path.IsNullOrEmpty())
-        {
+        {   
             existing.Path = scanPath.Path;
         }
 
         repository.Update(existing);
         await repository.SaveChangesAsync();
 
+        settings.ScanPaths[scanPath.Path] = settingsEntry;
+        await settingsRepository.SaveSettingsAsync(settings);
+        
         return NoContent();
     }
 
@@ -84,11 +111,14 @@ public class ScanPathController(IRepository repository) : ControllerBase
     {
         var existing = await repository.ScanPaths.SingleOrDefaultAsync(x => x.Id == id);
 
-        if (existing != null)
-        {
-            repository.Remove(existing);
-            await repository.SaveChangesAsync();
-        }
+        if (existing == null) return NoContent();
+        
+        repository.Remove(existing);
+        await repository.SaveChangesAsync();
+            
+        var settings = await settingsRepository.GetSettingsAsync();
+        settings.ScanPaths.Remove(existing.Path);
+        await settingsRepository.SaveSettingsAsync(settings);
 
         return NoContent();
     }

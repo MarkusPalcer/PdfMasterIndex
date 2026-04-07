@@ -26,6 +26,7 @@
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="PdfPig" Version="0.1.14" />
         <PackageReference Include="Scrutor" Version="7.0.0" />
     </ItemGroup>

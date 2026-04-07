@@ -1,5 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
-using PdfMasterIndex.Service.Infrastructure.Persistence.Models;
+using PdfMasterIndex.Service.Domain.Index;
 
 namespace PdfMasterIndex.Service.Application.Scanning;
 

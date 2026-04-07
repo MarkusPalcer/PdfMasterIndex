@@ -1,0 +1,27 @@
+<Solution>
+
+    <!-- Solution Items -->
+    <!--
+    <Folder Name="/Solution Items/">
+        <File Path="Directory.Packages.props" />
+    </Folder>
+    -->
+
+    <!-- List of Projects -->
+    <!--
+    <Project Path="ADD_PROJECT_FILE_1_RELATIVE_PATH_HERE" />
+    <Project Path="ADD_PROJECT_FILE_2_RELATIVE_PATH_HERE">
+        <Configuration />
+        <Deploy />
+    </Project>
+    -->
+  <Folder Name="/Solution Files/">
+    <File Path=".gitignore" />
+    <File Path="compose.yaml.template" />
+    <File Path="dotnet-tools.json" />
+    <File Path="LICENSE" />
+    <File Path="README.MD" />
+  </Folder>
+  <Project Path="Service/Service.csproj" />
+
+</Solution>

@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using PdfMasterIndex.Service.Domain.Index;
 using PdfMasterIndex.Service.Infrastructure.Persistence;
-using PdfMasterIndex.Service.Infrastructure.Persistence.Models;
 
 namespace PdfMasterIndex.Service.Presentation.v1;
 
