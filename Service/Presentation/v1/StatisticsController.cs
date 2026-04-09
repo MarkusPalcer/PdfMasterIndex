@@ -10,6 +10,7 @@ public class StatisticsController(MasterIndexDbContext context) : ControllerBase
     public class ScanPath
     {
         public string Name { get; set; } = "";
+        public string[] Tags { get; set; } = [];
         public Document[] Documents { get; set; } = [];
     }
 
@@ -25,11 +26,13 @@ public class StatisticsController(MasterIndexDbContext context) : ControllerBase
     public async Task<ActionResult<IEnumerable<ScanPath>>> GetStatistics()
     {
         var scanPaths = await context.ScanPaths
+            .Include(sp => sp.Tags)
             .Include(sp => sp.Documents)
             .ThenInclude(doc => doc.Content)
             .Select(sp => new ScanPath
             {
                 Name = sp.Name,
+                Tags = sp.Tags.Select(t => t.Value).ToArray(),
                 Documents = sp.Documents.Select(doc => new Document
                 {
                     Name = doc.Name,

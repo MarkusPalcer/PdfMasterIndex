@@ -7,9 +7,14 @@ $(() => {
     const $filterIcon = $('#filter-icon');
     const $filterPopup = $('#filter-popup');
     const $scanPathsList = $('#scanpaths-list');
+    const $tagFilterIcon = $('#tag-filter-icon');
+    const $tagFilterPopup = $('#tag-filter-popup');
+    const $tagsList = $('#tags-list');
 
     let allScanPaths = [];
     let activeScanPathIds = new Set();
+    let allTags = [];
+    let activeTagIds = new Set();
 
     async function fetchScanPaths() {
         try {
@@ -18,6 +23,22 @@ $(() => {
             renderScanPaths();
         } catch (err) {
             console.error('Failed to fetch ScanPaths:', err);
+        }
+    }
+
+    async function fetchTags() {
+        try {
+            allTags = await $.getJSON('/api/v1/tags');
+            if (allTags.length === 0) {
+                $tagFilterIcon.addClass('disabled').attr('title', 'no tags in use');
+            } else {
+                $tagFilterIcon.removeClass('disabled').attr('title', 'Filter by Tags');
+            }
+            // User says: "The list should start out with all tags disabled"
+            activeTagIds = new Set();
+            renderTags();
+        } catch (err) {
+            console.error('Failed to fetch Tags:', err);
         }
     }
 
@@ -42,18 +63,51 @@ $(() => {
         });
     }
 
+    function renderTags() {
+        $tagsList.empty();
+        allTags.forEach(tag => {
+            const isOn = activeTagIds.has(tag.id);
+            const $li = $('<li>')
+                .text(tag.value)
+                .addClass(isOn ? 'on' : 'off')
+                .on('click', (e) => {
+                    e.stopPropagation();
+                    if (activeTagIds.has(tag.id)) {
+                        activeTagIds.delete(tag.id);
+                    } else {
+                        activeTagIds.add(tag.id);
+                    }
+                    renderTags();
+                    onSearchTriggered();
+                });
+            $tagsList.append($li);
+        });
+    }
+
     $filterIcon.on('click', (e) => {
         e.stopPropagation();
+        $tagFilterPopup.addClass('hidden');
         $filterPopup.toggleClass('hidden');
+    });
+
+    $tagFilterIcon.on('click', (e) => {
+        if ($tagFilterIcon.hasClass('disabled')) return;
+        e.stopPropagation();
+        $filterPopup.addClass('hidden');
+        $tagFilterPopup.toggleClass('hidden');
     });
 
     $(document).on('click', (e) => {
         if (!$filterPopup.is(e.target) && $filterPopup.has(e.target).length === 0 && !$filterIcon.is(e.target)) {
             $filterPopup.addClass('hidden');
         }
+        if (!$tagFilterPopup.is(e.target) && $tagFilterPopup.has(e.target).length === 0 && !$tagFilterIcon.is(e.target)) {
+            $tagFilterPopup.addClass('hidden');
+        }
     });
 
     fetchScanPaths();
+    fetchTags();
 
     let searchTimeout;
     $searchInput.on('input', function () {
@@ -94,7 +148,8 @@ $(() => {
                 contentType: 'application/json',
                 data: JSON.stringify({
                     query: query,
-                    searchPaths: Array.from(activeScanPathIds)
+                    searchPaths: Array.from(activeScanPathIds),
+                    tags: Array.from(activeTagIds)
                 })
             });
 

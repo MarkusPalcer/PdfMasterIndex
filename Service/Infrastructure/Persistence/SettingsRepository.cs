@@ -1,15 +1,27 @@
 using AutoInterfaceAttributes;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using PdfMasterIndex.Service.Attributes;
 using PdfMasterIndex.Service.Domain.Settings;
+using PdfMasterIndex.Service.Presentation.v1;
 
 namespace PdfMasterIndex.Service.Infrastructure.Persistence;
 
 [AutoInterface]
 [Lifetime(ServiceLifetime.Singleton)]
-public class SettingsRepository(ILogger<SettingsRepository> logger) : ISettingsRepository
+public class SettingsRepository(ILogger<SettingsRepository> logger, IHubContext<SettingsHub> hubContext) : ISettingsRepository
 {
-    private static JsonSerializerSettings _jsonSerializerSettings = new()
+    public bool SettingsWritable
+    {
+        get => field;
+        private set
+        {
+            field = value;
+            _ = hubContext.Clients.All.SendAsync("SettingsWritableChanged", value);
+        }
+    } = true;
+
+    private static readonly JsonSerializerSettings JsonSerializerSettings = new()
     {
         DateFormatHandling = DateFormatHandling.IsoDateFormat,
         DateTimeZoneHandling = DateTimeZoneHandling.Utc,
@@ -22,7 +34,7 @@ public class SettingsRepository(ILogger<SettingsRepository> logger) : ISettingsR
     {
         try
         {
-            return JsonConvert.DeserializeObject<Settings>(await File.ReadAllTextAsync(_fileName), _jsonSerializerSettings) ?? new Settings();
+            return JsonConvert.DeserializeObject<Settings>(await File.ReadAllTextAsync(_fileName), JsonSerializerSettings) ?? new Settings();
         }
         catch (Exception ex)
         {
@@ -33,6 +45,15 @@ public class SettingsRepository(ILogger<SettingsRepository> logger) : ISettingsR
 
     public async Task SaveSettingsAsync(Settings settings)
     {
-        await File.WriteAllTextAsync(_fileName, JsonConvert.SerializeObject(settings, _jsonSerializerSettings));
+        try
+        {
+            await File.WriteAllTextAsync(_fileName, JsonConvert.SerializeObject(settings, JsonSerializerSettings));
+            SettingsWritable = true;
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Cannot save settings");
+            SettingsWritable = false;
+        }
     }
 }

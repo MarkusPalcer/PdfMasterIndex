@@ -1,0 +1,68 @@
+.name-tag {
+    display: inline-flex;
+    align-items: center;
+    background-color: #ffedb9;
+    /* Gift tag shape */
+    clip-path: polygon(10px 0, 100% 0, 100% 100%, 10px 100%, 0 50%);
+    /* Use drop-shadow to simulate a border that follows the clip-path */
+    filter: drop-shadow(0 2px 0 #53361a) drop-shadow(0 -2px 0 #8b5a2b) drop-shadow(2px 0 0 #8b5a2b) drop-shadow(-2px 0 0 #8b5a2b);
+    padding: 3px 6px 3px 14px;
+    margin-right: 5px;
+    margin-bottom: 2px;
+    font-size: 0.85em;
+    color: #5d4037;
+    position: relative;
+}
+
+.name-tag::before {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 4px;
+    background-color: #8b5a2b;
+    border-radius: 50%;
+}
+
+.name-tag.disabled::before {
+    background-color: #a9a9a9;
+}
+
+.name-tag.error::before {
+    background-color: #dc3545;
+}
+
+.name-tag.disabled {
+    background-color: #d3d3d3;
+    filter: drop-shadow(0 2px 0 #a9a9a9) drop-shadow(0 -2px 0 #a9a9a9) drop-shadow(2px 0 0 #a9a9a9) drop-shadow(-2px 0 0 #a9a9a9);
+    color: #808080;
+}
+
+.name-tag.error {
+    background-color: #f8d7da;
+    filter: drop-shadow(0 2px 0 #dc3545) drop-shadow(0 -2px 0 #dc3545) drop-shadow(2px 0 0 #dc3545) drop-shadow(-2px 0 0 #dc3545);
+    color: #721c24;
+}
+
+.name-tag-symbol {
+    margin-left: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    color: #8b5a2b;
+    font-size: 1.2em;
+    line-height: 1;
+}
+
+.name-tag-symbol:hover {
+    color: #5d4037;
+}
+
+.name-tag-symbol.retry {
+    cursor: default;
+}
+
+.name-tag.error .name-tag-symbol.retry {
+    cursor: pointer;
+}

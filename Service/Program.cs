@@ -39,12 +39,28 @@ await ApplySettingsAsync();
 
 app.MapOpenApi();
 app.UseDefaultFiles();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    OnPrepareResponse = ctx =>
+    {
+        ctx.Context.Response.Headers.Append("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
+        ctx.Context.Response.Headers.Append("Pragma", "no-cache");
+        ctx.Context.Response.Headers.Append("Expires", "0");
+    }
+});
+app.Use(async (context, next) =>
+{
+    context.Response.Headers.Append("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0");
+    context.Response.Headers.Append("Pragma", "no-cache");
+    context.Response.Headers.Append("Expires", "0");
+    await next();
+});
 app.UseAuthorization();
 app.MapControllers();
 app.MapFallbackToFile("index.html");
 app.MapHub<ScanHub>("/scan-hub");
 app.MapHub<LogHub>("/log-hub");
+app.MapHub<SettingsHub>("/settings-hub");
 app.Run();
 
 return;
@@ -64,30 +80,27 @@ async Task ApplySettingsAsync()
     var settingsRepo = scope.ServiceProvider.GetRequiredService<ISettingsRepository>();
     var dataRepo = scope.ServiceProvider.GetRequiredService<IRepository>();
 
-    var existingScanPaths = await dataRepo.ScanPaths.ToDictionaryAsync(x => x.Path);
+    var databaseEntries = await dataRepo.ScanPaths
+                                        .Include(x => x.Tags)
+                                        .ToDictionaryAsync(x => x.Path);
     
     var settings = await settingsRepo.GetSettingsAsync();
-    foreach (var scanPath in settings.ScanPaths)
+    foreach (var settingsEntry in settings.ScanPaths)
     {
-        if (existingScanPaths.TryGetValue(scanPath.Key, out var existingScanPath))
+        if (!databaseEntries.TryGetValue(settingsEntry.Key, out var databaseEntry))
         {
-            existingScanPath.Name = scanPath.Value.Name;
-        }
-        else
-        {
-            await dataRepo.AddAsync(new ScanPath
+            databaseEntry = new ScanPath
             {
-                Path = scanPath.Key,
-                Name = scanPath.Value.Name,
-            });
+                Path = settingsEntry.Key,
+            };
+            await dataRepo.AddAsync(databaseEntry);
         }
+        databaseEntry.Name = settingsEntry.Value.Name;
+        databaseEntry.Tags = await dataRepo.ProcessTags(settingsEntry.Value.Tags);
     }
     await dataRepo.SaveChangesAsync();
     
     var newExistingScanPaths = await dataRepo.ScanPaths.ToArrayAsync();
-    settings.ScanPaths = newExistingScanPaths.ToDictionary(x => x.Path, x=> new PdfMasterIndex.Service.Domain.Settings.ScanPath()
-    {
-        Name = x.Name
-    });
+    settings.ScanPaths = newExistingScanPaths.ToDictionary(x => x.Path, x=> new PdfMasterIndex.Service.Domain.Settings.ScanPath(x));
     await settingsRepo.SaveSettingsAsync(settings);
 }

@@ -15,8 +15,8 @@ public class Repository(MasterIndexDbContext context) : IRepository
     public IQueryable<ScanPath> ScanPaths => context.ScanPaths;
     public IQueryable<Document> Documents => context.Documents;
     public IQueryable<Word> Words => context.Words;
-    
     public IQueryable<Occurrence> Occurrences => context.Occurrences;
+    public IQueryable<Tag> Tags => context.Tags;
     
     public ValueTask<EntityEntry<T>> AddAsync<T>(T entity) where T : class
     {
@@ -55,5 +55,33 @@ public class Repository(MasterIndexDbContext context) : IRepository
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         return context.SaveChangesAsync(cancellationToken);
+    }
+    
+    public async Task<List<Tag>> ProcessTags(IEnumerable<string>? usedTags)
+    {
+        var result = new List<Tag>();
+
+        if (usedTags is null) return [];
+        
+        var availableTags = Tags.ToDictionary(x => x.Value);
+        usedTags = usedTags.Distinct().ToArray();
+        
+        foreach (var tag in usedTags)
+        {
+            if (!availableTags.TryGetValue(tag, out var tagEntity))
+            {
+                tagEntity = new Tag
+                {
+                    Value = tag,
+                };
+                await AddAsync(tagEntity);
+            }
+            
+            result.Add(tagEntity);
+        }
+        
+        await SaveChangesAsync();
+
+        return result;
     }
 }

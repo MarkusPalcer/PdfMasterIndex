@@ -1,5 +1,3 @@
-using System.Text.Json.Serialization;
-
 namespace PdfMasterIndex.Service.Domain.Index;
 
 public class ScanPath
@@ -22,5 +20,10 @@ public class ScanPath
     /// <summary>
     /// The documents that have been scanned within this scan path.
     /// </summary>
-    [JsonIgnore] public List<Document> Documents { get; set; } = [];
+    public List<Document> Documents { get; set; } = [];
+    
+    /// <summary>
+    /// The tags that have been assigned to this scan path.
+    /// </summary>
+    public List<Tag> Tags { get; set; } = [];
 }

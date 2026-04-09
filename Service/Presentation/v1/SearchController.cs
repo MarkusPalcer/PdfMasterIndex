@@ -12,6 +12,8 @@ public class SearchController(IRepository repository) : ControllerBase
     {
         public string Query { get; set; } = "";
         public List<Guid>? SearchPaths { get; set; }
+        
+        public HashSet<Guid>? Tags { get; set; }
     }
 
     [HttpPost("/api/v1/search")]
@@ -22,7 +24,6 @@ public class SearchController(IRepository repository) : ControllerBase
             return [];
         }
 
-
         IQueryable<Occurrence> search = repository.Occurrences
                                                   .Include(x => x.Word)
                                                   .Where(x => x.Word.Value.Contains(request.Query))
@@ -31,6 +32,11 @@ public class SearchController(IRepository repository) : ControllerBase
         if (request.SearchPaths != null)
         {
             search = search.Where(x => request.SearchPaths.Contains(x.Document.ScanPath.Id));
+        }
+
+        if (request.Tags is { Count: > 0 })
+        {
+            search = search.Where(x => x.Document.ScanPath.Tags.Any(t => request.Tags.Contains(t.Id)));
         }
         
         var searchResult = search.OrderByDescending(x => x.Word.Value == request.Query)

@@ -34,6 +34,15 @@ $(document).ready(function() {
                 .replace(/{{documentCount}}/g, (scanPath.documents || []).length);
             
             const $scanPathItem = $(html);
+            const $tagsContainer = $scanPathItem.find('.item-tags');
+            
+            if (scanPath.tags && scanPath.tags.length > 0) {
+                scanPath.tags.forEach(tag => {
+                    const $tagSpan = $('<span class="name-tag"></span>').text(tag);
+                    $tagsContainer.append($tagSpan);
+                });
+            }
+
             const $documentsContent = $scanPathItem.find('.collapsible-content');
 
             (scanPath.documents || []).forEach(doc => {
