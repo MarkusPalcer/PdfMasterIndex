@@ -1,4 +1,4 @@
-.statistics-container {
+.documents-container {
     margin: 20px;
     padding: 10px;
     background-color: #fcf5e5;
@@ -47,19 +47,26 @@
 }
 
 .item-info {
-    color: #5d4037;
+    color: #888888;
     font-size: 0.9em;
+    font-style: italic;
 }
 
 .collapsible-content {
     padding: 10px 10px 10px 30px;
 }
 
-.document-details {
+.document-header {
+    padding: 5px 8px;
     display: flex;
-    flex-direction: column;
-    gap: 5px;
-    padding: 5px;
+    align-items: center;
+    gap: 10px;
+    user-select: none;
+    border-bottom: 1px solid #e2d2a2;
+}
+
+.document-item {
+    margin-bottom: 5px;
 }
 
 .detail-row {
@@ -76,12 +83,18 @@
     color: #5d4037;
 }
 
+.loading-small {
+    padding: 10px;
+    font-style: italic;
+    color: #8b5a2b;
+}
+
 .spinner {
     margin: 20px auto;
 }
 
 @media (max-width: 600px) {
-    .statistics-container {
+    .documents-container {
         margin: 10px 0;
         padding: 5px;
     }

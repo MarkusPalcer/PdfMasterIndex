@@ -16,7 +16,7 @@ public class TagController(IRepository repository) : ControllerBase
     {
         return await repository.Tags
                                .Include(x => x.ScanPaths)
-                               .Where(x => x.ScanPaths.Any())
+                               .Where(x => x.ScanPaths.Any() || x.Documents.Any())
                                .Select(x => new TagDto(x.Id, x.Value))
                                .ToArrayAsync();
     }

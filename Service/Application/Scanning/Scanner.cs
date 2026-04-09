@@ -266,6 +266,8 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
         await _repository.BulkInsertAsync(_newOccurrences);
         
         document.Hash = await HashFileAsync(new FileInfo(Path.Combine(document.ScanPath.Path, document.FilePath)));
+        document.PageCount = numberOfPages;
+        document.WordCount = _newOccurrences.Count;
         await _repository.SaveChangesAsync();
     }
 }

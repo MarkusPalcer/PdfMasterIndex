@@ -31,4 +31,9 @@ public class Document
     
     [JsonIgnore]
     public List<Occurrence> Content { get; set; } = []; 
+    
+    [JsonIgnore] public List<Tag> Tags { get; set; } = [];
+    
+    [JsonIgnore] public int PageCount { get; set; }
+    [JsonIgnore] public int WordCount { get; set; }
 }

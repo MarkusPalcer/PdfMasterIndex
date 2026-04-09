@@ -6,4 +6,5 @@ public class Tag
     public required string Value { get; set; }
     
     public List<ScanPath> ScanPaths { get; set; } = [];
+    public List<Document> Documents { get; set; } = [];
 }

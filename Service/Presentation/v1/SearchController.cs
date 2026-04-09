@@ -28,6 +28,7 @@ public class SearchController(IRepository repository) : ControllerBase
                                                   .Include(x => x.Word)
                                                   .Where(x => x.Word.Value.Contains(request.Query))
                                                   .Include(x => x.Document)
+                                                  .Include(x => x.Document.Tags)
                                                   .Include(x => x.Document.ScanPath);
         if (request.SearchPaths != null)
         {
@@ -36,7 +37,7 @@ public class SearchController(IRepository repository) : ControllerBase
 
         if (request.Tags is { Count: > 0 })
         {
-            search = search.Where(x => x.Document.ScanPath.Tags.Any(t => request.Tags.Contains(t.Id)));
+            search = search.Where(x => x.Document.Tags.Any(t => request.Tags.Contains(t.Id)) || x.Document.ScanPath.Tags.Any(t => request.Tags.Contains(t.Id)));
         }
         
         var searchResult = search.OrderByDescending(x => x.Word.Value == request.Query)

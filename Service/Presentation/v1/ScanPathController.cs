@@ -1,3 +1,4 @@
+using JetBrains.Annotations;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -137,6 +138,21 @@ public class ScanPathController(IRepository repository, ISettingsRepository sett
         return Ok(existing.Tags.Select(t => t.Value).ToArray());
     }
 
+    [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
+    public record DocumentDto(Guid Id, string Name, int Pages, int Words, string[] Tags);
+
+    [HttpGet("/api/v1/scanpaths/{id}/documents")]
+    public async Task<ActionResult<DocumentDto[]>> GetDocuments(Guid id)
+    {
+        var existing = await repository.ScanPaths
+                            .Include(x => x.Documents)
+                            .ThenInclude(x => x.Tags)
+                            .SingleOrDefaultAsync(x => x.Id == id);
+        if (existing == null) return NotFound("ScanPath not found");
+
+        return Ok(existing.Documents.Select(d => new DocumentDto(d.Id, d.Name, d.PageCount, d.WordCount, d.Tags.Select(t => t.Value).ToArray())).ToArray());
+    }
+
     [HttpPost("/api/v1/scanpaths/{id}/tags/{tag}")]
     public async Task<IActionResult> AddTag(Guid id, string tag)
     {
@@ -149,7 +165,7 @@ public class ScanPathController(IRepository repository, ISettingsRepository sett
 
         existing.Tags.Add(tagEntity.First());
         await repository.SaveChangesAsync();
-        
+
         var settings = await settingsRepository.GetSettingsAsync();
         settings.ScanPaths[existing.Path] = new Domain.Settings.ScanPath(existing);
         await settingsRepository.SaveSettingsAsync(settings);
@@ -172,7 +188,7 @@ public class ScanPathController(IRepository repository, ISettingsRepository sett
         var settings = await settingsRepository.GetSettingsAsync();
         settings.ScanPaths[existing.Path] = new Domain.Settings.ScanPath(existing);
         await settingsRepository.SaveSettingsAsync(settings);
-        
+
         return NoContent();
     }
 }
