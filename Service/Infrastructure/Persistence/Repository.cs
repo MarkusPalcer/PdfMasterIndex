@@ -10,7 +10,7 @@ namespace PdfMasterIndex.Service.Infrastructure.Persistence;
 
 [Lifetime(ServiceLifetime.Scoped)]
 [AutoInterface]
-public class Repository(MasterIndexDbContext context) : IRepository
+public class Repository(MasterIndexDbContext context, ILogger<Repository> logger) : IRepository
 {
     public IQueryable<ScanPath> ScanPaths => context.ScanPaths;
     public IQueryable<Document> Documents => context.Documents;
@@ -38,18 +38,83 @@ public class Repository(MasterIndexDbContext context) : IRepository
         await context.BulkInsertAsync(entities);
     }
 
+    public async Task DeleteScanPathAsync(ScanPath scanPath)
+    {
+        logger.DeletingScanPath(scanPath.Name, scanPath.Id);
+        var originalTimeout = context.Database.GetCommandTimeout();
+        context.Database.SetCommandTimeout(600); // 10 minutes
+
+        try
+        {
+            logger.DeletingScanPathRecord(scanPath.Id);
+            context.ScanPaths.Remove(scanPath);
+            await context.SaveChangesAsync();
+
+            logger.DeletedScanPathSuccess(scanPath.Id);
+        }
+        catch (Exception ex)
+        {
+            logger.DeletedScanPathFailed(scanPath.Id, ex);
+            throw;
+        }
+        finally
+        {
+            context.Database.SetCommandTimeout(originalTimeout);
+        }
+    }
+
     public async Task ClearDocumentAsync(Document document)
     {
-        document.Hash = string.Empty;
-        await context.SaveChangesAsync();
-        
-        await context.Occurrences
-                     .Where(x => x.Document.Id == document.Id)
-                     .ExecuteDeleteAsync();
-        await context.Words
-                     .Where(x => x.Occurrences.Count == 0)
-                     .ExecuteDeleteAsync();
+        logger.ClearingDocument(document.FilePath, document.Id);
+        var originalTimeout = context.Database.GetCommandTimeout();
+        context.Database.SetCommandTimeout(300); // 5 minutes
 
+        try
+        {
+            document.Hash = string.Empty;
+            await context.SaveChangesAsync();
+
+            // 1. Delete all Occurrences for this Document
+            logger.DeletingOccurrencesForDocument(document.Id);
+            var occurrencesDeleted = await context.Occurrences
+                         .Where(x => x.Document.Id == document.Id)
+                         .ExecuteDeleteAsync();
+            logger.DeletedOccurrencesForDocumentCount(occurrencesDeleted, document.Id);
+            logger.ClearedDocumentSuccess(document.Id);
+        }
+        catch (Exception ex)
+        {
+            logger.ClearedDocumentFailed(document.Id, ex);
+            throw;
+        }
+        finally
+        {
+            context.Database.SetCommandTimeout(originalTimeout);
+        }
+    }
+
+    public async Task DeleteOrphanedWordsAsync()
+    {
+        logger.DeletingOrphanedWords();
+        var originalTimeout = context.Database.GetCommandTimeout();
+        context.Database.SetCommandTimeout(600); // 10 minutes
+
+        try
+        {
+            var wordsDeleted = await context.Words
+                         .Where(x => !x.Occurrences.Any())
+                         .ExecuteDeleteAsync();
+            logger.DeletedOrphanedWordsCount(wordsDeleted);
+        }
+        catch (Exception ex)
+        {
+            logger.DeletedOrphanedWordsFailed(ex);
+            throw;
+        }
+        finally
+        {
+            context.Database.SetCommandTimeout(originalTimeout);
+        }
     }
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

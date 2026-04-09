@@ -172,7 +172,6 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
 
         try
         {
-
             var documentsToScan = await _repository.Documents
                                                    .Include(x => x.ScanPath)
                                                    .Where(x => x.Hash == string.Empty)
@@ -203,13 +202,14 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
                 scanned++;
                 Status.CurrentStepProgress = scanned / (double)documentCount;
             }
+
+            logger.ImportFinished();
+            await _repository.DeleteOrphanedWordsAsync();
         }
         finally
         {
             _repository = null!;
         }
-
-        logger.ImportFinished();
     }
 
     private async Task ProcessFile(Document document)

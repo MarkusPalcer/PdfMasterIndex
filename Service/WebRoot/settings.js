@@ -341,6 +341,13 @@ $(async () => {
                 $row.find('.delete-btn').on('click', async () => {
                     if (!confirm('Are you sure you want to delete this scan path?')) return;
                     const id = $row.attr('data-id');
+                    const $spinner = $row.find('.spinner');
+                    const $controls = $row.find('input, .action-icon, .name-tag');
+
+                    $row.addClass('deleting');
+                    $spinner.addClass('visible');
+                    $controls.addClass('disabled');
+
                     try {
                         await $.ajax({
                             url: `/api/v1/scanpaths/${id}`,
@@ -350,6 +357,9 @@ $(async () => {
                     } catch (err) {
                         const errorText = getErrorMessage(err);
                         alert(`Failed to delete scan path: ${errorText}`);
+                        $row.removeClass('deleting');
+                        $spinner.removeClass('visible');
+                        $controls.removeClass('disabled');
                     }
                 });
 

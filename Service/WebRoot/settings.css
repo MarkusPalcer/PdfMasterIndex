@@ -1,1 +1,13 @@
 /* Generic name tag style has been moved to tags.css */
+
+tr.deleting {
+    background-color: #d3d3d3 !important;
+    opacity: 0.6;
+}
+
+tr.deleting input,
+tr.deleting .action-icon,
+tr.deleting .name-tag {
+    pointer-events: none;
+    opacity: 0.5;
+}

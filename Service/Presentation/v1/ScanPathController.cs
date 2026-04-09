@@ -29,8 +29,9 @@ public class ScanPathController(IRepository repository, ISettingsRepository sett
     }
 
     [HttpPost("/api/v1/scanpaths")]
-    public async Task<ActionResult<ScanPathDto>> Post(ScanPathDto scanPath)
+    public async Task<ActionResult<ScanPathDto>> Post(ScanPathDto scanPath, [FromServices] ILogger<ScanPathController> logger)
     {
+        logger.LogInformation("Creating new ScanPath: {Path}", scanPath.Path);
         if (scanPath.Id != Guid.Empty)
         {
             var exists = await repository.ScanPaths.AnyAsync(x => x.Id == scanPath.Id);
@@ -61,12 +62,14 @@ public class ScanPathController(IRepository repository, ISettingsRepository sett
         settings.ScanPaths[newItem.Path] = new PdfMasterIndex.Service.Domain.Settings.ScanPath(newItem);
         await settingsRepository.SaveSettingsAsync(settings);
 
+        logger.LogInformation("ScanPath {Path} created successfully with ID {Id}", newItem.Path, newItem.Id);
         return CreatedAtAction(nameof(Get), new { id = scanPath.Id }, scanPath);
     }
 
     [HttpPut("/api/v1/scanpaths/{id}")]
-    public async Task<IActionResult> Put(Guid id, ScanPathDto scanPath)
+    public async Task<IActionResult> Put(Guid id, ScanPathDto scanPath, [FromServices] ILogger<ScanPathController> logger)
     {
+        logger.LogInformation("Updating ScanPath {Id}...", id);
         if (!scanPath.Tags.IsNullOrEmpty())
         {
             return BadRequest("Tags cannot be updated with this endpoint. Use the tags collection endpoints instead");
@@ -103,23 +106,25 @@ public class ScanPathController(IRepository repository, ISettingsRepository sett
         settings.ScanPaths[existing.Path] = new Domain.Settings.ScanPath(existing);
         await settingsRepository.SaveSettingsAsync(settings);
 
+        logger.LogInformation("ScanPath {Id} updated successfully", id);
         return NoContent();
     }
 
     [HttpDelete("/api/v1/scanpaths/{id}")]
-    public async Task<IActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id, [FromServices] ILogger<ScanPathController> logger)
     {
+        logger.LogInformation("Deleting ScanPath {Id}...", id);
         var existing = await repository.ScanPaths.SingleOrDefaultAsync(x => x.Id == id);
 
         if (existing == null) return NoContent();
 
-        repository.Remove(existing);
-        await repository.SaveChangesAsync();
+        await repository.DeleteScanPathAsync(existing);
 
         var settings = await settingsRepository.GetSettingsAsync();
         settings.ScanPaths.Remove(existing.Path);
         await settingsRepository.SaveSettingsAsync(settings);
 
+        logger.LogInformation("ScanPath {Id} deleted successfully from database and settings", id);
         return NoContent();
     }
 
