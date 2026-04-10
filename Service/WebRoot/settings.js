@@ -309,8 +309,7 @@ $(async () => {
                     const id = $row.attr('data-id');
                     const updatedData = {
                         path: $pathInput.val().trim(),
-                        name: $nameInput.val().trim(),
-                        tags: $row.attr('data-initial-tags').split(', ').filter(t => t.length > 0)
+                        name: $nameInput.val().trim()
                     };
 
                     $row.find('input, button, span').addClass('disabled');
@@ -326,7 +325,6 @@ $(async () => {
                         // Update initial values
                         $row.attr('data-initial-path', updatedData.path);
                         $row.attr('data-initial-name', updatedData.name);
-                        $row.attr('data-initial-tags', updatedData.tags.join(', '));
                         prevPath = updatedData.path;
                         checkChanges();
                     } catch (err) {
