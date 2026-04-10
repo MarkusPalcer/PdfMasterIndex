@@ -22,6 +22,17 @@ public class ScanStatus(IHubContext<ScanHub> hubContext) : IScanStatus
         }
     } = ScanStep.Idle;
 
+    public string CurrentStepMessage
+    {
+        get => field;
+        set
+        {
+            if (field == value) return;
+            field = value;
+            Notify();
+        }
+    } = string.Empty;
+
     public double CurrentStepProgress
     {
         get;

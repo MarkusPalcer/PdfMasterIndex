@@ -28,7 +28,11 @@ $(async () => {
             $cancelLink.addClass('visible');
             $currentStepText.removeClass('hidden');
             $topProgressSection.removeClass('hidden');
-            $bottomProgressSection.removeClass('hidden');
+            if (status.currentStep === 3 || status.currentStep === "ParseFiles") {
+                $bottomProgressSection.removeClass('hidden');
+            } else {
+                $bottomProgressSection.addClass('hidden');
+            }
         } else {
             $scanLink.addClass('visible');
             $cancelLink.removeClass('visible');
@@ -40,14 +44,7 @@ $(async () => {
             $bottomProgressSection.addClass('hidden');
         }
 
-        const steps = {
-            0: "Idle",
-            1: "Cancelling",
-            2: "Scanning folders for new/changed files...",
-            3: "Parsing files..."
-        };
-        const stepName = typeof status.currentStep === 'number' ? (steps[status.currentStep] || status.currentStep) : status.currentStep;
-        $currentStepText.text(`Current Step: ${stepName}`);
+        $currentStepText.text(status.currentStepMessage);
 
         $topProgressBarFill.css('width', `${status.currentStepProgress * 100}%`);
         $bottomProgressBarFill.css('width', `${status.currentFileProgress * 100}%`);

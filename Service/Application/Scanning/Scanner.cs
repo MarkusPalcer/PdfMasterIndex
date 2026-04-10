@@ -93,6 +93,8 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
         var repository = scope.ServiceProvider.GetRequiredService<IRepository>();
         var path = repository.ScanPaths.Include(x => x.Documents).Single(x => x.Id == scanPathId);
 
+        Status.CurrentStepMessage = $"Scanning {path.Name} for new/changed files...";
+
         var knownFiles = path.Documents.ToDictionary(x => x.FilePath);
 
         var files = new DirectoryInfo(path.Path).GetFiles("*.pdf", SearchOption.AllDirectories);
@@ -215,14 +217,17 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
     private async Task ProcessFile(Document document)
     {
         Status.CurrentFileProgress = 0;
-        logger.ImportProgress(document.FilePath);
+        var fullFilePath = Path.Combine(document.ScanPath.Path, document.FilePath);
+        Status.CurrentStepMessage = $"Parsing {fullFilePath}...";
+        
+        logger.ImportProgress(fullFilePath);
 
         await _repository.ClearDocumentAsync(document);
         var words = new WordCollection(await _repository.Words.ToListAsync());
         _newWords.Clear();
         _newOccurrences.Clear();
 
-        using var pdf = PdfDocument.Open(Path.Combine(document.ScanPath.Path, document.FilePath));
+        using var pdf = PdfDocument.Open(fullFilePath);
 
         var numberOfPages = pdf.NumberOfPages;
 
@@ -239,7 +244,7 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
             if (!words.TryGetValue(word, out var wordEntity))
             {
                 wordEntity = new Word
-                { 
+                {
                     Id = Guid.NewGuid(),
                     Value = word.ToString()
                 };
@@ -261,11 +266,13 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
 
             Status.CurrentFileProgress = page / (double)numberOfPages;
         });
+
+        Status.CurrentStepMessage = $"Saving {fullFilePath}...";
         
         await _repository.BulkInsertAsync(_newWords);
         await _repository.BulkInsertAsync(_newOccurrences);
-        
-        document.Hash = await HashFileAsync(new FileInfo(Path.Combine(document.ScanPath.Path, document.FilePath)));
+
+        document.Hash = await HashFileAsync(new FileInfo(fullFilePath));
         document.PageCount = numberOfPages;
         document.WordCount = _newOccurrences.Count;
         await _repository.SaveChangesAsync();
