@@ -1,6 +1,7 @@
 using AutoInterfaceAttributes;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using PdfMasterIndex.Service.Attributes;
 using PdfMasterIndex.Service.Domain.Settings;
 using PdfMasterIndex.Service.Presentation.v1;
@@ -26,6 +27,7 @@ public class SettingsRepository(ILogger<SettingsRepository> logger, IHubContext<
         DateFormatHandling = DateFormatHandling.IsoDateFormat,
         DateTimeZoneHandling = DateTimeZoneHandling.Utc,
         Formatting = Formatting.Indented,
+        Converters = [new StringEnumConverter()]
     };
     
     private readonly string _fileName = Environment.GetEnvironmentVariable("CONFIG_PATH") ?? Path.Combine(".", "config.json");

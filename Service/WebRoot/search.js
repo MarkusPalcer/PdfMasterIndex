@@ -15,6 +15,7 @@ $(() => {
     let activeScanPathIds = new Set();
     let allTags = [];
     let activeTagIds = new Set();
+    let tagHandling = 'Or';
 
     async function fetchScanPaths() {
         try {
@@ -97,6 +98,11 @@ $(() => {
         $tagFilterPopup.toggleClass('hidden');
     });
 
+    $tagFilterPopup.on('change', 'input[name="tag-handling"]', (e) => {
+        tagHandling = $(e.target).val();
+        onSearchTriggered();
+    });
+
     $(document).on('click', (e) => {
         if (!$filterPopup.is(e.target) && $filterPopup.has(e.target).length === 0 && !$filterIcon.is(e.target)) {
             $filterPopup.addClass('hidden');
@@ -149,7 +155,8 @@ $(() => {
                 data: JSON.stringify({
                     query: query,
                     searchPaths: Array.from(activeScanPathIds),
-                    tags: Array.from(activeTagIds)
+                    tags: Array.from(activeTagIds),
+                    tagHandling: tagHandling
                 })
             });
 

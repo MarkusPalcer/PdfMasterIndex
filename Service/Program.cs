@@ -1,5 +1,6 @@
 using System.Reflection;
 using AutoInterfaceAttributes;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using PdfMasterIndex.Service.Attributes;
 using PdfMasterIndex.Service.Domain.Index;
@@ -14,8 +15,16 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
 });
 
 // Add services to the container.
-builder.Services.AddControllers();
-builder.Services.AddSignalR();
+builder.Services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
+builder.Services.AddSignalR()
+                .AddJsonProtocol(options =>
+                {
+                    options.PayloadSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                });
 builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 

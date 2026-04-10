@@ -86,6 +86,30 @@
     padding: 10px;
 }
 
+.tag-filter-popup hr {
+    border: 0;
+    border-top: 1px solid #8b5a2b;
+    margin: 5px 0 10px;
+}
+
+.tag-handling-toggle {
+    display: flex;
+    justify-content: space-around;
+    padding: 5px;
+}
+
+.tag-handling-toggle label {
+    cursor: pointer;
+    font-size: 0.9em;
+    color: #5d4037;
+    display: flex;
+    align-items: center;
+}
+
+.tag-handling-toggle input {
+    margin-right: 5px;
+}
+
 #scanpaths-list, #tags-list {
     list-style: none;
     padding: 0;

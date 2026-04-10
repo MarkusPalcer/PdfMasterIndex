@@ -12,23 +12,30 @@ public class SearchController(IRepository repository) : ControllerBase
     {
         public string Query { get; set; } = "";
         public List<Guid>? SearchPaths { get; set; }
-        
+
         public HashSet<Guid>? Tags { get; set; }
+        
+        public TagHandling TagHandling { get; set; } = TagHandling.Or;
+    }
+
+    public enum TagHandling
+    {
+        And,
+        Or
     }
 
     [HttpPost("/api/v1/search")]
-    public async Task<SearchResult[]> Search([FromBody] SearchRequest request)
+    public async Task<ActionResult<SearchResult[]>> Search([FromBody] SearchRequest request)
     {
         if (string.IsNullOrWhiteSpace(request.Query))
         {
-            return [];
+            return Ok(Array.Empty<SearchResult>());
         }
 
         IQueryable<Occurrence> search = repository.Occurrences
                                                   .Include(x => x.Word)
                                                   .Where(x => x.Word.Value.Contains(request.Query))
                                                   .Include(x => x.Document)
-                                                  .Include(x => x.Document.Tags)
                                                   .Include(x => x.Document.ScanPath);
         if (request.SearchPaths != null)
         {
@@ -37,13 +44,16 @@ public class SearchController(IRepository repository) : ControllerBase
 
         if (request.Tags is { Count: > 0 })
         {
-            search = search.Where(x => x.Document.Tags.Any(t => request.Tags.Contains(t.Id)) || x.Document.ScanPath.Tags.Any(t => request.Tags.Contains(t.Id)));
+            search = search.Include(x => x.Document.Tags)
+                           .Include(x => x.Document.ScanPath.Tags);
+            search = search.Where(x => x.Document.Tags.Any(t => request.Tags.Contains(t.Id)) ||
+                                       x.Document.ScanPath.Tags.Any(t => request.Tags.Contains(t.Id)));
         }
-        
+
         var searchResult = search.OrderByDescending(x => x.Word.Value == request.Query)
-                       .ThenBy(x => x.Word.Value)
-                       .AsAsyncEnumerable()
-                       .GroupBy(x => x.Word.Value);
+                                 .ThenBy(x => x.Word.Value)
+                                 .AsAsyncEnumerable()
+                                 .GroupBy(x => x.Word.Value);
 
         var results = new List<SearchResult>();
 
@@ -53,14 +63,41 @@ public class SearchController(IRepository repository) : ControllerBase
             {
                 Word = item.Key,
             };
-            foreach (var documents in item.GroupBy(x => x.Document))
+            foreach (var document in item.GroupBy(x => x.Document))
             {
+                if (request.Tags is { Count: > 0 })
+                {
+                    var tags = new HashSet<Guid>();
+                    tags.UnionWith(document.Key.ScanPath.Tags.Select(x => x.Id));
+                    tags.UnionWith(document.Key.Tags.Select(x => x.Id));
+
+                    switch (request.TagHandling)
+                    {
+                        case TagHandling.Or:
+                            if (!tags.Any(t => request.Tags.Contains(t)))
+                            {
+                                continue;
+                            }
+
+                            break;
+                        case TagHandling.And:
+                            if (!request.Tags.All(t => tags.Contains(t)))
+                            {
+                                continue;
+                            }
+
+                            break;
+                        default:
+                            return BadRequest("Invalid TagHandling value");
+                    }
+                }
+
                 result.Locations.Add(new SearchResult.Location
                 {
-                    DocumentId = documents.Key.Id,
-                    DocumentName = documents.Key.Name,
-                    LinkPath = $"/api/v1/documents/{documents.Key.Id}",
-                    Pages = documents.Select(x => x.Page).Distinct().Order().ToList()
+                    DocumentId = document.Key.Id,
+                    DocumentName = document.Key.Name,
+                    LinkPath = $"/api/v1/documents/{document.Key.Id}",
+                    Pages = document.Select(x => x.Page).Distinct().Order().ToList()
                 });
             }
 
