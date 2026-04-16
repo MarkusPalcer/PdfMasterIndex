@@ -13,7 +13,6 @@ namespace PdfMasterIndex.Service.Application.Scanning;
 [Lifetime(ServiceLifetime.Singleton)]
 public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILogger<Scanner> logger) : IScanner
 {
-    public IScanStatus Status { get; } = status;
     private Task _scanTask = Task.CompletedTask;
     private CancellationTokenSource _cancellationSource = new();
 
@@ -24,12 +23,12 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
 
     public void Start()
     {
-        if (Status.IsRunning)
+        if (status.IsRunning)
         {
             throw new InvalidOperationException("Scanner is already scanning.");
         }
 
-        Status.CurrentStep = ScanStep.ScanForFiles;
+        status.CurrentStep = ScanStep.ScanForFiles;
 
         _cancellationSource = new CancellationTokenSource();
         _scanTask = ScanAsync();
@@ -37,15 +36,15 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
 
     public async Task Cancel()
     {
-        if (!Status.IsRunning)
+        if (!status.IsRunning)
         {
             throw new InvalidOperationException("Scanner is not scanning.");
         }
 
-        Status.CurrentStep = ScanStep.Cancelling;
+        status.CurrentStep = ScanStep.Cancelling;
         await _cancellationSource.CancelAsync();
         await _scanTask;
-        Status.CurrentStep = ScanStep.Idle;
+        status.CurrentStep = ScanStep.Idle;
     }
 
     public async Task ScanAsync()
@@ -54,22 +53,24 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
         {
             await ScanForFiles();
             await ProcessFiles();
-            Status.CurrentStep = ScanStep.Idle;
+            status.CurrentStep = ScanStep.Idle;
         }
         catch (OperationCanceledException)
         {
+            status.CurrentStep = ScanStep.Idle;
             logger.Cancelled();
         }
         catch (Exception ex)
         {
+            status.CurrentStep = ScanStep.Idle;
             logger.UncaughtException(ex);
         }
     }
 
     private async Task ScanForFiles()
     {
-        Status.CurrentStep = ScanStep.ScanForFiles;
-        Status.CurrentStepProgress = 0;
+        status.CurrentStep = ScanStep.ScanForFiles;
+        status.CurrentStepProgress = 0;
 
         Guid[] paths;
         using (var scope = scopeFactory.CreateScope())
@@ -82,7 +83,7 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
         {
             await ScanForFiles(scanPath);
             count++;
-            Status.CurrentStepProgress = count / (double)paths.Length;
+            status.CurrentStepProgress = count / (double)paths.Length;
             _cancellationSource.Token.ThrowIfCancellationRequested();
         }
     }
@@ -93,7 +94,7 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
         var repository = scope.ServiceProvider.GetRequiredService<IRepository>();
         var path = repository.ScanPaths.Include(x => x.Documents).Single(x => x.Id == scanPathId);
 
-        Status.CurrentStepMessage = $"Scanning {path.Name} for new/changed files...";
+        status.CurrentStepMessage = $"Scanning {path.Name} for new/changed files";
 
         var knownFiles = path.Documents.ToDictionary(x => x.FilePath);
 
@@ -166,8 +167,9 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
 
     private async Task ProcessFiles()
     {
-        Status.CurrentStep = ScanStep.ParseFiles;
-        Status.CurrentStepProgress = 0;
+        status.CurrentStep = ScanStep.ParseFiles;
+        status.CurrentStepProgress = 0;
+        status.CurrentStepMessage = "Parsing files";
 
         using var scope = scopeFactory.CreateScope();
         _repository = scope.ServiceProvider.GetRequiredService<IRepository>();
@@ -202,7 +204,7 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
                 }
 
                 scanned++;
-                Status.CurrentStepProgress = scanned / (double)documentCount;
+                status.CurrentStepProgress = scanned / (double)documentCount;
             }
 
             logger.ImportFinished();
@@ -216,9 +218,9 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
 
     private async Task ProcessFile(Document document)
     {
-        Status.CurrentFileProgress = 0;
+        status.CurrentFileProgress = 0;
         var fullFilePath = Path.Combine(document.ScanPath.Path, document.FilePath);
-        Status.CurrentStepMessage = $"Parsing {fullFilePath}...";
+        status.CurrentFileMessage = $"Parsing {fullFilePath}";
         
         logger.ImportProgress(fullFilePath);
 
@@ -264,13 +266,13 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
 
             _newOccurrences.Add(occurrence);
 
-            Status.CurrentFileProgress = page / (double)numberOfPages;
+            status.CurrentFileProgress = page / (double)numberOfPages;
         });
 
-        Status.CurrentStepMessage = $"Saving {fullFilePath}...";
+        status.CurrentFileMessage = $"Saving {fullFilePath}";
         
-        await _repository.BulkInsertAsync(_newWords);
-        await _repository.BulkInsertAsync(_newOccurrences);
+        await _repository.BulkInsertAsync(_newWords, p => status.CurrentFileProgress = (double)p * 0.5);
+        await _repository.BulkInsertAsync(_newOccurrences, p => status.CurrentFileProgress = (double)p * 0.5 + 0.5);
 
         document.Hash = await HashFileAsync(new FileInfo(fullFilePath));
         document.PageCount = numberOfPages;

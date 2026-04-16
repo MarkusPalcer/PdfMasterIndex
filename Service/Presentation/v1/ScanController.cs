@@ -4,7 +4,7 @@ using PdfMasterIndex.Service.Application.Scanning;
 namespace PdfMasterIndex.Service.Presentation.v1;
 
 [ApiController]
-public class ScanController(IScanner scanner) : ControllerBase
+public class ScanController(IScanner scanner, IScanStatus status) : ControllerBase
 {
     [HttpPost("/api/v1/scan")]
     public IActionResult Post()
@@ -23,7 +23,7 @@ public class ScanController(IScanner scanner) : ControllerBase
     [HttpGet("/api/v1/scan")]
     public ActionResult<IScanStatus> Get()
     {
-        return Ok(scanner.Status);
+        return Ok(status);
     }
 
     [HttpDelete("/api/v1/scan")]

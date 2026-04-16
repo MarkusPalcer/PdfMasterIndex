@@ -488,3 +488,4 @@ fabric.properties
 docker-compose.yml
 docker-compose.yaml
 **/config.json
+/.idea/.idea.PdfMasterIndex/.idea/data_source_mapping.xml

@@ -33,9 +33,9 @@ public class Repository(MasterIndexDbContext context, ILogger<Repository> logger
         context.Remove(entity);
     }
 
-    public async Task BulkInsertAsync<T>(IEnumerable<T> entities) where T : class
+    public async Task BulkInsertAsync<T>(IEnumerable<T> entities, Action<decimal>? progress = null) where T : class
     {
-        await context.BulkInsertAsync(entities);
+        await context.BulkInsertAsync(entities, (BulkConfig?)null, progress, null, CancellationToken.None);
     }
 
     public async Task DeleteScanPathAsync(ScanPath scanPath)

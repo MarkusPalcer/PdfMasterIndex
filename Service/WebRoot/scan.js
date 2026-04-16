@@ -14,6 +14,7 @@ $(async () => {
         .build();
 
     const $currentStepText = $('#current-step-text');
+    const $currentFileText = $('#current-file-text');
     const $topProgressBarFill = $('#top-progress-bar-fill');
     const $bottomProgressBarFill = $('#bottom-progress-bar-fill');
     const $topProgressSection = $('#top-progress-section');
@@ -45,6 +46,7 @@ $(async () => {
         }
 
         $currentStepText.text(status.currentStepMessage);
+        $currentFileText.text(status.currentFileMessage);
 
         $topProgressBarFill.css('width', `${status.currentStepProgress * 100}%`);
         $bottomProgressBarFill.css('width', `${status.currentFileProgress * 100}%`);

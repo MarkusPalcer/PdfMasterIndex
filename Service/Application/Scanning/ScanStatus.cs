@@ -55,6 +55,17 @@ public class ScanStatus(IHubContext<ScanHub> hubContext) : IScanStatus
         }
     } = 0;
 
+    public string CurrentFileMessage
+    {
+        get;
+        set
+        {
+            if (field == value) return;
+            field = value;
+            Notify();
+        }
+    } = string.Empty;
+
     private void Notify()
     {
         _ = hubContext.Clients.All.SendAsync("ScanStatusChanged", this);
