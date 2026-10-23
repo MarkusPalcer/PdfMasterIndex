@@ -18,6 +18,13 @@ public class Repository(MasterIndexDbContext context, ILogger<Repository> logger
     public IQueryable<Occurrence> Occurrences => context.Occurrences;
     public IQueryable<Tag> Tags => context.Tags;
     
+    public IQueryable<InputWord> InputWords => context.InputWords;
+
+    public async Task ExecuteSqlRawAsync(string sql)
+    {
+        await context.Database.ExecuteSqlRawAsync(sql);
+    }
+    
     public ValueTask<EntityEntry<T>> AddAsync<T>(T entity) where T : class
     {
         return context.AddAsync(entity);

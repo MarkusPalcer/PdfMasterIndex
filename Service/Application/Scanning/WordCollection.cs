@@ -1,25 +1,35 @@
-using System.Diagnostics.CodeAnalysis;
-using PdfMasterIndex.Service.Domain.Index;
+using System.Collections;
 
 namespace PdfMasterIndex.Service.Application.Scanning;
 
-public class WordCollection
+public class WordCollection : IEnumerable<string>
 {
-    private readonly Dictionary<string, Word> _dictionary;
+    private readonly HashSet<string> _set;
+    private readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> _spanLookup;
 
-    public WordCollection(IEnumerable<Word> initialData)
+    public WordCollection(IEnumerable<string> initialData)
     {
-        _dictionary = initialData.ToDictionary(x => x.Value, x => x, StringComparer.Ordinal);
+        _set = initialData.ToHashSet(StringComparer.Ordinal);
+        _spanLookup = _set.GetAlternateLookup<ReadOnlySpan<char>>();
     }
 
-    public void Add(Word word)
+    public string GetOrAdd(ReadOnlySpan<char> word)
     {
-        _dictionary[word.Value] = word;
+        if (_spanLookup.TryGetValue(word, out var value))
+            return value;
+
+        value = word.ToString();
+        _set.Add(value);
+        return value;
     }
 
-    public bool TryGetValue(ReadOnlySpan<char> word, [MaybeNullWhen(false)] out Word wordEntity)
+    public IEnumerator<string> GetEnumerator()
     {
-        var alternateLookup = _dictionary.GetAlternateLookup<ReadOnlySpan<char>>();
-        return alternateLookup.TryGetValue(word, out wordEntity);
+        return _set.GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return ((IEnumerable)_set).GetEnumerator();
     }
 }

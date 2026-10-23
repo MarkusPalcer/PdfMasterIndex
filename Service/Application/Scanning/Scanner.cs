@@ -16,8 +16,7 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
     private Task _scanTask = Task.CompletedTask;
     private CancellationTokenSource _cancellationSource = new();
 
-    private readonly List<Word> _newWords = [];
-    private readonly List<Occurrence> _newOccurrences = [];
+    private readonly List<(Occurrence Occurence, string Word)> _newOccurrences = [];
 
     private IRepository _repository = null!;
 
@@ -225,8 +224,9 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
         logger.ImportProgress(fullFilePath);
 
         await _repository.ClearDocumentAsync(document);
-        var words = new WordCollection(await _repository.Words.ToListAsync());
-        _newWords.Clear();
+        
+        var words = new WordCollection(await _repository.Words.Select(x => x.Value).ToListAsync());
+        
         _newOccurrences.Clear();
 
         using var pdf = PdfDocument.Open(fullFilePath);
@@ -242,18 +242,9 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
                 logger.WordTooLong(word.ToString(), page);
                 return;
             }
-
-            if (!words.TryGetValue(word, out var wordEntity))
-            {
-                wordEntity = new Word
-                {
-                    Id = Guid.NewGuid(),
-                    Value = word.ToString()
-                };
-                _newWords.Add(wordEntity);
-                words.Add(wordEntity);
-            }
-
+            
+            var wordAsString = words.GetOrAdd(word);
+            
             var occurrence = new Occurrence
             {
                 Id = Guid.NewGuid(),
@@ -261,22 +252,103 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
                 DocumentPosition = positionInDocument,
                 Page = page,
                 PagePosition = positionInPage,
-                Word = wordEntity
+                Word = null!
             };
 
-            _newOccurrences.Add(occurrence);
+            _newOccurrences.Add((occurrence, wordAsString));
 
             status.CurrentFileProgress = page / (double)numberOfPages;
         });
 
         status.CurrentFileMessage = $"Saving {fullFilePath}";
+
+        var wordEntityIds = await SaveAndGetWordIdsAsync(words);
+
+        foreach (var newOccurrence in _newOccurrences)
+        {
+            newOccurrence.Occurence.WordId = wordEntityIds[newOccurrence.Word];
+        }
         
-        await _repository.BulkInsertAsync(_newWords, p => status.CurrentFileProgress = (double)p * 0.5);
-        await _repository.BulkInsertAsync(_newOccurrences, p => status.CurrentFileProgress = (double)p * 0.5 + 0.5);
+        await _repository.BulkInsertAsync(_newOccurrences.Select(x=> x.Occurence), p => status.CurrentFileProgress = (double)p * 0.5 + 0.5);
 
         document.Hash = await HashFileAsync(new FileInfo(fullFilePath));
         document.PageCount = numberOfPages;
         document.WordCount = _newOccurrences.Count;
         await _repository.SaveChangesAsync();
+    }
+
+    private async Task<Dictionary<string, Guid>> SaveAndGetWordIdsAsync(
+        WordCollection words)
+    {
+        var inputWords = CreateInputWords(words);
+
+        await ClearInputWordsAsync();
+        
+        await _repository.BulkInsertAsync(inputWords, p => status.CurrentFileProgress = (double)p * 0.5);
+
+        await InsertMissingWordsAsync();
+
+        await ResolveWordIdsAsync();
+
+        var wordIds = await ReadWordIdsAsync();
+
+        await ClearInputWordsAsync();
+        
+        return wordIds;
+    }
+
+    private static List<InputWord> CreateInputWords(WordCollection words)
+    {
+        return words
+            .Select(word => new InputWord
+            {
+                Id = Guid.CreateVersion7(),
+                Value = word
+            })
+            .ToList();
+    }
+
+    private async Task InsertMissingWordsAsync()
+    {
+        await _repository.ExecuteSqlRawAsync(
+            """
+            INSERT INTO dbo.Words (Value, Ignored)
+            SELECT iw.Value, 0
+            FROM dbo.InputWords AS iw
+            WHERE NOT EXISTS
+            (
+                SELECT 1
+                FROM dbo.Words AS w
+                WHERE w.Value = iw.Value
+            )
+            GROUP BY iw.Value;
+            """);
+    }
+    
+    private async Task ResolveWordIdsAsync()
+    {
+        await _repository.ExecuteSqlRawAsync(
+            """
+            UPDATE iw
+            SET WordId = w.Id
+            FROM dbo.InputWords AS iw
+            INNER JOIN dbo.Words AS w
+                ON w.Value = iw.Value;
+            """);
+    }
+    
+    private async Task<Dictionary<string, Guid>> ReadWordIdsAsync()
+    {
+        return await _repository.InputWords
+            .AsNoTracking()
+            .ToDictionaryAsync(
+                x => x.Value,
+                x => x.WordId!.Value,
+                StringComparer.Ordinal);
+    }
+    
+    private async Task ClearInputWordsAsync()
+    {
+        await _repository.ExecuteSqlRawAsync("TRUNCATE TABLE dbo.InputWords;");
     }
 }

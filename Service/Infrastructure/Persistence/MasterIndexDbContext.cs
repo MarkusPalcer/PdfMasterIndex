@@ -10,6 +10,7 @@ public class MasterIndexDbContext(DbContextOptions<MasterIndexDbContext> options
     public DbSet<Word> Words { get; set; }
     public DbSet<Occurrence> Occurrences { get; set; }
     public DbSet<Tag> Tags { get; set; }
+    public DbSet<InputWord> InputWords { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

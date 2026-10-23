@@ -17,7 +17,7 @@ namespace PdfMasterIndex.Service.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.5")
+                .HasAnnotation("ProductVersion", "10.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -74,6 +74,25 @@ namespace PdfMasterIndex.Service.Infrastructure.Persistence.Migrations
                     b.ToTable("Documents");
                 });
 
+            modelBuilder.Entity("PdfMasterIndex.Service.Domain.Index.InputWord", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)")
+                        .UseCollation("SQL_Latin1_General_CP1_CI_AS");
+
+                    b.Property<Guid?>("WordId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("InputWords", "dbo");
+                });
+
             modelBuilder.Entity("PdfMasterIndex.Service.Domain.Index.Occurrence", b =>
                 {
                     b.Property<Guid>("Id")
@@ -99,7 +118,7 @@ namespace PdfMasterIndex.Service.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("DocumentId");
 
-                    b.HasIndex("WordId");
+                    b.HasIndex("WordId", "DocumentId", "Page");
 
                     b.ToTable("Occurrences");
                 });
@@ -145,7 +164,8 @@ namespace PdfMasterIndex.Service.Infrastructure.Persistence.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
 
                     b.Property<bool>("Ignored")
                         .HasColumnType("bit");
@@ -156,6 +176,9 @@ namespace PdfMasterIndex.Service.Infrastructure.Persistence.Migrations
                         .HasColumnType("nvarchar(128)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Value")
+                        .IsUnique();
 
                     b.ToTable("Words");
                 });

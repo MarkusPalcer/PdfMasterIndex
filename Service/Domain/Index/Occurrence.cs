@@ -11,11 +11,13 @@ public class Occurrence
     /// The word that is being indexed.
     /// </summary>
     public required Word Word { get; set; }
+    public Guid WordId { get; set; }
     
     /// <summary>
     /// The document that contains the word.
     /// </summary>
     public required Document Document { get; set; }
+    public Guid DocumentId { get; set; }
     
     /// <summary>
     /// The zero-based page that contains the word.
