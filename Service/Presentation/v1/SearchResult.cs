@@ -1,5 +1,7 @@
 namespace PdfMasterIndex.Service.Presentation.v1;
 
+public record SearchResponse(SearchResult[] Results, double DurationMs);
+
 public class SearchResult
 {
     public string Word { get; set; } = "";

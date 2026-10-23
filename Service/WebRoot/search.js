@@ -148,7 +148,7 @@ $(() => {
         $searchSpinner.addClass('visible');
 
         try {
-            const results = await $.ajax({
+            const response = await $.ajax({
                 url: '/api/v1/search',
                 type: 'POST',
                 contentType: 'application/json',
@@ -160,7 +160,7 @@ $(() => {
                 })
             });
 
-            renderResults(results);
+            renderResults(response);
         } catch (err) {
             console.error('Search failed:', err);
             $searchResultsContainer.append($('<p>').text('Search failed. Please try again.'));
@@ -169,7 +169,16 @@ $(() => {
         }
     }
 
-    function renderResults(results) {
+    function renderResults(response) {
+        const results = response.results;
+        const durationMs = response.durationMs;
+        const formattedDuration = durationMs < 1000
+            ? `${Math.round(durationMs)} ms`
+            : `${(durationMs / 1000).toFixed(2)} s`;
+        $searchResultsContainer.append(
+            $('<small>').addClass('search-duration').text(`Search took ${formattedDuration}`)
+        );
+
         if (!results || results.length === 0) {
             $searchResultsContainer.append($('<p>').text('No results found.'));
             return;

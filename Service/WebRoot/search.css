@@ -202,6 +202,12 @@
     padding-left: 0;
 }
 
+.search-duration {
+    display: block;
+    margin-bottom: 8px;
+    color: #9e9e9e;
+}
+
 #search-results-container li {
     margin-bottom: 5px;
 }

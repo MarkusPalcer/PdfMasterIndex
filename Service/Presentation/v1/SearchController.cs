@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PdfMasterIndex.Service.Domain.Index;
@@ -25,11 +26,12 @@ public class SearchController(IRepository repository) : ControllerBase
     }
 
     [HttpPost("/api/v1/search")]
-    public async Task<ActionResult<SearchResult[]>> Search([FromBody] SearchRequest request)
+    public async Task<ActionResult<SearchResponse>> Search([FromBody] SearchRequest request)
     {
+        var stopwatch = Stopwatch.StartNew();
         if (string.IsNullOrWhiteSpace(request.Query))
         {
-            return Ok(Array.Empty<SearchResult>());
+            return Ok(new SearchResponse([], stopwatch.Elapsed.TotalMilliseconds));
         }
 
         IQueryable<Occurrence> search = repository.Occurrences
@@ -104,6 +106,6 @@ public class SearchController(IRepository repository) : ControllerBase
             results.Add(result);
         }
 
-        return results.ToArray();
+        return new SearchResponse(results.ToArray(), stopwatch.Elapsed.TotalMilliseconds);
     }
 }
