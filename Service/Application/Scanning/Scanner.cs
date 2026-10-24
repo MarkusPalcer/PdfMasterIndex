@@ -248,7 +248,8 @@ public class Scanner(IScanStatus status, IServiceScopeFactory scopeFactory, ILog
             var occurrence = new Occurrence
             {
                 Id = Guid.NewGuid(),
-                Document = document,
+                DocumentId = document.Id,
+                Document = null!,
                 DocumentPosition = positionInDocument,
                 Page = page,
                 PagePosition = positionInPage,
