@@ -17,11 +17,61 @@ $(() => {
     let activeTagIds = new Set();
     let tagHandling = 'Or';
 
+    let scanPathsLoaded = false;
+    let tagsLoaded = false;
+
+    function updateUrl() {
+        const params = new URLSearchParams();
+        const query = $searchInput.val();
+        if (query) params.set('q', query);
+
+        if (allScanPaths.length > 0) {
+            if (activeScanPathIds.size === 0) {
+                params.set('sp', 'none');
+            } else if (activeScanPathIds.size < allScanPaths.length) {
+                params.set('sp', Array.from(activeScanPathIds).join(','));
+            }
+        }
+
+        if (activeTagIds.size > 0) {
+            params.set('t', Array.from(activeTagIds).join(','));
+        }
+
+        if (tagHandling !== 'Or') {
+            params.set('th', tagHandling);
+        }
+
+        const url = new URL(window.location);
+        url.search = params.toString();
+        history.replaceState(null, '', url);
+    }
+
+    function checkInitialSearch() {
+        if (scanPathsLoaded && tagsLoaded) {
+            const params = new URLSearchParams(window.location.search);
+            const query = params.get('q');
+            if (query) {
+                onSearchTriggered();
+            }
+        }
+    }
+
     async function fetchScanPaths() {
         try {
             allScanPaths = await $.getJSON('/api/v1/scanpaths');
-            activeScanPathIds = new Set(allScanPaths.map(sp => sp.id));
+            const params = new URLSearchParams(window.location.search);
+            const spParam = params.get('sp');
+            if (spParam === 'none') {
+                activeScanPathIds = new Set();
+            } else if (spParam) {
+                const ids = spParam.split(',').map(Number);
+                activeScanPathIds = new Set(ids.filter(id => allScanPaths.some(sp => sp.id === id)));
+            } else {
+                activeScanPathIds = new Set(allScanPaths.map(sp => sp.id));
+            }
             renderScanPaths();
+            scanPathsLoaded = true;
+            checkInitialSearch();
         } catch (err) {
             console.error('Failed to fetch ScanPaths:', err);
         }
@@ -35,9 +85,25 @@ $(() => {
             } else {
                 $tagFilterIcon.removeClass('disabled').attr('title', 'Filter by Tags');
             }
-            // User says: "The list should start out with all tags disabled"
-            activeTagIds = new Set();
+            
+            const params = new URLSearchParams(window.location.search);
+            const tParam = params.get('t');
+            if (tParam) {
+                const ids = tParam.split(',').map(Number);
+                activeTagIds = new Set(ids.filter(id => allTags.some(t => t.id === id)));
+            } else {
+                activeTagIds = new Set();
+            }
+
+            const thParam = params.get('th');
+            if (thParam && (thParam === 'And' || thParam === 'Or')) {
+                tagHandling = thParam;
+                $(`input[name="tag-handling"][value="${tagHandling}"]`).prop('checked', true);
+            }
+
             renderTags();
+            tagsLoaded = true;
+            checkInitialSearch();
         } catch (err) {
             console.error('Failed to fetch Tags:', err);
         }
@@ -111,6 +177,12 @@ $(() => {
             $tagFilterPopup.addClass('hidden');
         }
     });
+
+    const params = new URLSearchParams(window.location.search);
+    const initialQuery = params.get('q');
+    if (initialQuery) {
+        $searchInput.val(initialQuery);
+    }
 
     fetchScanPaths();
     fetchTags();
@@ -222,6 +294,7 @@ $(() => {
     }
 
     function onSearchTriggered() {
+        updateUrl();
         clearTimeout(searchTimeout);
         const query = $searchInput.val();
         if (query.includes(' ')) {
